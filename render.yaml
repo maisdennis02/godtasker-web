@@ -1,0 +1,25 @@
+# Render Blueprint — deploys the web client as a free static site.
+# Docs: https://render.com/docs/blueprint-spec
+#
+# Usage: in Render → "New" → "Blueprint", point it at this repo. Render builds
+# with Vite and serves ./dist from its CDN; every push to main redeploys.
+
+services:
+  - type: web
+    name: godtasker-web
+    runtime: static
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    autoDeploy: true
+    envVars:
+      # Vite only reads env vars at build time; this bakes the API origin in.
+      - key: VITE_API_URL
+        value: https://godtasker-api.onrender.com
+      - key: NODE_VERSION
+        value: 22.22.2
+    routes:
+      # SPA fallback: client-side routes (/tasks, /people/:id, …) all serve
+      # index.html and react-router takes over.
+      - type: rewrite
+        source: /*
+        destination: /index.html
