@@ -27,7 +27,7 @@ const en = {
   mockItem1: 'Oat milk',
   mockItem2: 'Coffee beans',
   mockItem3: 'Bread from the corner bakery',
-  mockProgress: '1 of 3 done',
+  mockProgress: '{n} of 3 done',
 
   // features
   featuresTitle: 'Everything a task needs',
@@ -93,7 +93,7 @@ const pt: Record<keyof typeof en, string> = {
   mockItem1: 'Leite de aveia',
   mockItem2: 'Café em grãos',
   mockItem3: 'Pão da padaria da esquina',
-  mockProgress: '1 de 3 concluído',
+  mockProgress: '{n} de 3 concluído',
 
   featuresTitle: 'Tudo o que uma tarefa precisa',
   featuresSubtitle: 'Sem quadros, sem projetos, sem configuração. Uma tarefa, uma pessoa, um prazo.',

@@ -1,10 +1,50 @@
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import detectiveUrl from '../assets/detective.svg'
 import { useLandingLocale } from '../i18n/landing'
 import type { Locale, MessageKey } from '../i18n/landing'
 
 type T = (key: MessageKey) => string
+
+// Adds .is-visible once the element scrolls into view; index.css turns that
+// into a fade/slide-in (staggered for .reveal-stagger children).
+function Reveal({
+  as: Tag = 'div',
+  stagger = false,
+  className = '',
+  children,
+}: {
+  as?: 'div' | 'section'
+  stagger?: boolean
+  className?: string
+  children: ReactNode
+}) {
+  const ref = useRef<HTMLElement | null>(null)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const io = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting) {
+          el.classList.add('is-visible')
+          io.disconnect()
+        }
+      },
+      { threshold: 0.15 }
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+  return (
+    <Tag
+      ref={ref as never}
+      className={`${stagger ? 'reveal-stagger' : 'reveal'} ${className}`}
+    >
+      {children}
+    </Tag>
+  )
+}
 
 // ── tiny inline icons (stroke style, heroicons-like) ─────────────────────────
 
@@ -79,14 +119,18 @@ function LangToggle({
   )
 }
 
-// The hero visual: a mock task card built in Tailwind — shows the product
-// (due date, subtask checklist, live progress) without screenshots.
+// The hero visual: a mock task card that plays itself — subtasks tick off one
+// by one and the progress bar fills, then it loops. A tiny product demo, no
+// screenshots or video.
 function MockTaskCard({ t }: { t: T }) {
-  const items: { label: string; done: boolean }[] = [
-    { label: t('mockItem1'), done: true },
-    { label: t('mockItem2'), done: false },
-    { label: t('mockItem3'), done: false },
-  ]
+  const [done, setDone] = useState(1)
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const id = setInterval(() => setDone(d => (d >= 3 ? 1 : d + 1)), 2200)
+    return () => clearInterval(id)
+  }, [])
+
+  const items = [t('mockItem1'), t('mockItem2'), t('mockItem3')]
   return (
     <div className="w-full max-w-sm rounded-2xl border border-slate-700/80 bg-slate-900/90 p-5 shadow-2xl shadow-indigo-950/50 backdrop-blur">
       <div className="flex items-start justify-between gap-3">
@@ -99,38 +143,55 @@ function MockTaskCard({ t }: { t: T }) {
         </span>
       </div>
       <ul className="mt-4 flex flex-col gap-2">
-        {items.map(item => (
-          <li key={item.label} className="flex items-center gap-2.5 text-sm">
-            <span
-              className={`flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded border ${
-                item.done
-                  ? 'border-indigo-500 bg-indigo-600 text-white'
-                  : 'border-slate-600 bg-slate-800'
-              }`}
-            >
-              {item.done && (
-                <svg viewBox="0 0 12 12" className="h-3 w-3" fill="none" aria-hidden>
-                  <path
-                    d="M2.5 6.5 5 9l4.5-6"
-                    stroke="currentColor"
-                    strokeWidth={1.8}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              )}
-            </span>
-            <span className={item.done ? 'text-slate-500 line-through' : 'text-slate-200'}>
-              {item.label}
-            </span>
-          </li>
-        ))}
+        {items.map((label, i) => {
+          const checked = i < done
+          return (
+            <li key={label} className="flex items-center gap-2.5 text-sm">
+              <span
+                className={`flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded border transition-colors duration-300 ${
+                  checked
+                    ? 'border-indigo-500 bg-indigo-600 text-white'
+                    : 'border-slate-600 bg-slate-800'
+                }`}
+              >
+                {checked && (
+                  <svg
+                    viewBox="0 0 12 12"
+                    className="animate-check-pop h-3 w-3"
+                    fill="none"
+                    aria-hidden
+                  >
+                    <path
+                      d="M2.5 6.5 5 9l4.5-6"
+                      stroke="currentColor"
+                      strokeWidth={1.8}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                )}
+              </span>
+              <span
+                className={`transition-colors duration-300 ${
+                  checked ? 'text-slate-500 line-through' : 'text-slate-200'
+                }`}
+              >
+                {label}
+              </span>
+            </li>
+          )
+        })}
       </ul>
       <div className="mt-4">
         <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
-          <div className="h-full w-1/3 rounded-full bg-indigo-500" />
+          <div
+            className="h-full rounded-full bg-indigo-500 transition-all duration-700 ease-out"
+            style={{ width: `${(done / 3) * 100}%` }}
+          />
         </div>
-        <p className="mt-1.5 text-right text-[11px] text-slate-500">{t('mockProgress')}</p>
+        <p className="mt-1.5 text-right text-[11px] text-slate-500">
+          {t('mockProgress').replace('{n}', String(done))}
+        </p>
       </div>
     </div>
   )
@@ -138,7 +199,7 @@ function MockTaskCard({ t }: { t: T }) {
 
 function FeatureCard({ icon, title, body }: { icon: string; title: string; body: string }) {
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5 transition hover:border-slate-700">
+    <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5 transition duration-300 hover:-translate-y-1 hover:border-indigo-500/40 hover:shadow-lg hover:shadow-indigo-950/40">
       <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-500/15 text-indigo-300">
         <Icon d={icon} className="h-5 w-5" />
       </div>
@@ -216,37 +277,53 @@ export function Landing() {
       {/* hero */}
       <section id="top" className="relative overflow-hidden">
         <div
-          className="pointer-events-none absolute -top-40 left-1/2 h-[32rem] w-[42rem] -translate-x-1/2 rounded-full bg-indigo-600/20 blur-3xl"
+          className="pointer-events-none absolute -top-40 left-1/2 h-[32rem] w-[42rem] -translate-x-1/2"
           aria-hidden
-        />
+        >
+          <div className="animate-glow h-full w-full rounded-full bg-indigo-600/20 blur-3xl" />
+        </div>
         <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 py-16 sm:px-6 md:grid-cols-2 md:py-24">
           <div>
-            <h1 className="text-4xl font-bold leading-tight tracking-tight text-white sm:text-5xl">
+            <h1 className="animate-enter text-shimmer text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
               {t('heroTitle')}
             </h1>
-            <p className="mt-4 max-w-xl text-lg text-slate-400">{t('heroSubtitle')}</p>
-            <div className="mt-8 flex flex-wrap items-center gap-4">
+            <p
+              className="animate-enter mt-4 max-w-xl text-lg text-slate-400"
+              style={{ animationDelay: '0.15s' }}
+            >
+              {t('heroSubtitle')}
+            </p>
+            <div
+              className="animate-enter mt-8 flex flex-wrap items-center gap-4"
+              style={{ animationDelay: '0.3s' }}
+            >
               <Link
                 to="/login?mode=register"
-                className="rounded-lg bg-indigo-600 px-6 py-3 text-base font-semibold text-white shadow-lg shadow-indigo-950/60 transition hover:bg-indigo-500"
+                className="rounded-lg bg-indigo-600 px-6 py-3 text-base font-semibold text-white shadow-lg shadow-indigo-950/60 transition hover:scale-[1.04] hover:bg-indigo-500 active:scale-[0.98]"
               >
                 {t('heroCta')}
               </Link>
               <a
                 href="#features"
-                className="text-sm font-medium text-indigo-400 hover:text-indigo-300"
+                className="group text-sm font-medium text-indigo-400 hover:text-indigo-300"
               >
-                {t('heroSecondary')} →
+                {t('heroSecondary')}{' '}
+                <span className="inline-block transition-transform group-hover:translate-x-1">
+                  →
+                </span>
               </a>
             </div>
           </div>
-          <div className="flex justify-center md:justify-end">
-            <div className="relative mt-10 sm:mt-0">
+          <div
+            className="animate-enter flex justify-center md:justify-end"
+            style={{ animationDelay: '0.45s' }}
+          >
+            <div className="animate-float relative mt-10 sm:mt-0">
               {/* Mascot peeking over the card's top corner. */}
               <img
                 src={detectiveUrl}
                 alt=""
-                className="absolute -top-16 -left-8 hidden h-20 w-20 -rotate-12 sm:block"
+                className="animate-bob absolute -top-16 -left-8 hidden h-20 w-20 -rotate-12 sm:block"
               />
               <MockTaskCard t={t} />
             </div>
@@ -256,17 +333,19 @@ export function Landing() {
 
       {/* features */}
       <section id="features" className="mx-auto max-w-6xl scroll-mt-16 px-4 py-16 sm:px-6">
-        <h2 className="text-center text-3xl font-bold tracking-tight text-white">
-          {t('featuresTitle')}
-        </h2>
-        <p className="mx-auto mt-2 max-w-2xl text-center text-slate-400">
-          {t('featuresSubtitle')}
-        </p>
-        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Reveal>
+          <h2 className="text-center text-3xl font-bold tracking-tight text-white">
+            {t('featuresTitle')}
+          </h2>
+          <p className="mx-auto mt-2 max-w-2xl text-center text-slate-400">
+            {t('featuresSubtitle')}
+          </p>
+        </Reveal>
+        <Reveal stagger className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {features.map(f => (
             <FeatureCard key={f.title} icon={f.icon} title={t(f.title)} body={t(f.body)} />
           ))}
-        </div>
+        </Reveal>
       </section>
 
       {/* use cases */}
@@ -275,15 +354,17 @@ export function Landing() {
         className="scroll-mt-16 border-y border-slate-800/60 bg-slate-950/60 py-16"
       >
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <h2 className="text-center text-3xl font-bold tracking-tight text-white">
-            {t('useCasesTitle')}
-          </h2>
-          <p className="mt-2 text-center text-slate-400">{t('useCasesSubtitle')}</p>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Reveal>
+            <h2 className="text-center text-3xl font-bold tracking-tight text-white">
+              {t('useCasesTitle')}
+            </h2>
+            <p className="mt-2 text-center text-slate-400">{t('useCasesSubtitle')}</p>
+          </Reveal>
+          <Reveal stagger className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {sectors.map(s => (
               <div
                 key={s.title}
-                className="flex gap-4 rounded-xl border border-slate-800 bg-slate-900/60 p-5"
+                className="flex gap-4 rounded-xl border border-slate-800 bg-slate-900/60 p-5 transition duration-300 hover:-translate-y-1 hover:border-indigo-500/40 hover:shadow-lg hover:shadow-indigo-950/40"
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-500/15 text-indigo-300">
                   <Icon d={s.icon} className="h-5 w-5" />
@@ -294,23 +375,29 @@ export function Landing() {
                 </div>
               </div>
             ))}
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* CTA band */}
       <section className="mx-auto max-w-6xl px-4 py-20 text-center sm:px-6">
-        <div className="rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-indigo-950/80 to-slate-900 px-6 py-14">
-          <h2 className="mx-auto max-w-2xl text-3xl font-bold tracking-tight text-white">
+        <Reveal className="relative overflow-hidden rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-indigo-950/80 to-slate-900 px-6 py-14">
+          <div
+            className="pointer-events-none absolute -top-24 left-1/2 h-48 w-96 -translate-x-1/2"
+            aria-hidden
+          >
+            <div className="animate-glow h-full w-full rounded-full bg-indigo-500/20 blur-3xl" />
+          </div>
+          <h2 className="relative mx-auto max-w-2xl text-3xl font-bold tracking-tight text-white">
             {t('ctaTitle')}
           </h2>
           <Link
             to="/login?mode=register"
-            className="mt-8 inline-block rounded-lg bg-indigo-600 px-8 py-3 text-base font-semibold text-white shadow-lg shadow-indigo-950/60 transition hover:bg-indigo-500"
+            className="relative mt-8 inline-block rounded-lg bg-indigo-600 px-8 py-3 text-base font-semibold text-white shadow-lg shadow-indigo-950/60 transition hover:scale-[1.04] hover:bg-indigo-500 active:scale-[0.98]"
           >
             {t('ctaButton')}
           </Link>
-        </div>
+        </Reveal>
       </section>
 
       {/* footer */}
