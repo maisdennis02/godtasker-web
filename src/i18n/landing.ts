@@ -23,11 +23,28 @@ const en = {
   // hero mock task card
   mockTitle: 'Grocery run',
   mockDue: 'Due Sat · 10:00',
-  mockFrom: 'from Alice',
+  mockYou: 'You',
   mockItem1: 'Oat milk',
   mockItem2: 'Coffee beans',
   mockItem3: 'Bread from the corner bakery',
   mockProgress: '{n} of 3 done',
+  mockStatusDoing: 'Bob is on it…',
+  mockStatusDone: 'Bob finished — your turn to confirm',
+  mockConfirm: 'Confirm',
+
+  // how it works
+  navHow: 'How it works',
+  howTitle: 'How it works',
+  howSubtitle:
+    'Not a personal to-do list — every task travels from you to someone else.',
+  howStep1Title: 'You create a task',
+  howStep1Body: 'Name it, set a due date, break it into subtasks.',
+  howStep2Title: 'You send it to someone',
+  howStep2Body:
+    'Anyone with an email — friend, family, freelancer. It lands on their dashboard, not yours.',
+  howStep3Title: 'They deliver, you confirm',
+  howStep3Body:
+    'They tick off the subtasks; you confirm the result and they earn the points.',
 
   // features
   featuresTitle: 'Everything a task needs',
@@ -89,11 +106,27 @@ const pt: Record<keyof typeof en, string> = {
 
   mockTitle: 'Compras da semana',
   mockDue: 'Prazo sáb · 10:00',
-  mockFrom: 'de Alice',
+  mockYou: 'Você',
   mockItem1: 'Leite de aveia',
   mockItem2: 'Café em grãos',
   mockItem3: 'Pão da padaria da esquina',
   mockProgress: '{n} de 3 concluído',
+  mockStatusDoing: 'O Bob está cuidando disso…',
+  mockStatusDone: 'O Bob terminou — sua vez de confirmar',
+  mockConfirm: 'Confirmar',
+
+  navHow: 'Como funciona',
+  howTitle: 'Como funciona',
+  howSubtitle:
+    'Não é uma lista de tarefas pessoal — cada tarefa vai de você para outra pessoa.',
+  howStep1Title: 'Você cria a tarefa',
+  howStep1Body: 'Dê um nome, defina o prazo e divida em subtarefas.',
+  howStep2Title: 'Você envia para alguém',
+  howStep2Body:
+    'Qualquer pessoa com e-mail — amigo, família, freelancer. A tarefa aparece no painel dela, não no seu.',
+  howStep3Title: 'A pessoa entrega, você confirma',
+  howStep3Body:
+    'Ela marca as subtarefas; você confirma o resultado e ela ganha os pontos.',
 
   featuresTitle: 'Tudo o que uma tarefa precisa',
   featuresSubtitle: 'Sem quadros, sem projetos, sem configuração. Uma tarefa, uma pessoa, um prazo.',

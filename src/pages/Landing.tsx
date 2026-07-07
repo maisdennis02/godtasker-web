@@ -119,9 +119,10 @@ function LangToggle({
   )
 }
 
-// The hero visual: a mock task card that plays itself — subtasks tick off one
-// by one and the progress bar fills, then it loops. A tiny product demo, no
-// screenshots or video.
+// The hero visual: a mock task card that plays itself — YOU sent this task to
+// Bob; Bob ticks off subtasks, then hands it back for your confirmation. The
+// two-avatar header and status line make the person-to-person flow explicit:
+// this is not a personal to-do list.
 function MockTaskCard({ t }: { t: T }) {
   const [done, setDone] = useState(1)
   useEffect(() => {
@@ -134,23 +135,41 @@ function MockTaskCard({ t }: { t: T }) {
   return (
     <div className="w-full max-w-sm rounded-2xl border border-slate-700/80 bg-slate-900/90 p-5 shadow-2xl shadow-indigo-950/50 backdrop-blur">
       <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="font-semibold text-white">{t('mockTitle')}</p>
-          <p className="text-xs text-slate-500">{t('mockFrom')}</p>
-        </div>
-        <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-300">
+        <p className="font-semibold text-white">{t('mockTitle')}</p>
+        <span className="shrink-0 rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-300">
           {t('mockDue')}
         </span>
+      </div>
+      {/* sender → assignee */}
+      <div className="mt-2 flex items-center gap-1.5 text-xs text-slate-400">
+        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-500/25 text-[9px] font-bold text-indigo-300">
+          {t('mockYou').slice(0, 1).toUpperCase()}
+        </span>
+        <span>{t('mockYou')}</span>
+        <svg viewBox="0 0 16 8" className="mx-0.5 h-2 w-4 text-slate-500" fill="none" aria-hidden>
+          <path
+            d="M0 4h13m0 0-3-3m3 3-3 3"
+            stroke="currentColor"
+            strokeWidth={1.4}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/25 text-[9px] font-bold text-emerald-300">
+          B
+        </span>
+        <span>Bob</span>
       </div>
       <ul className="mt-4 flex flex-col gap-2">
         {items.map((label, i) => {
           const checked = i < done
           return (
             <li key={label} className="flex items-center gap-2.5 text-sm">
+              {/* Emerald = Bob's color: he is the one ticking these off. */}
               <span
                 className={`flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded border transition-colors duration-300 ${
                   checked
-                    ? 'border-indigo-500 bg-indigo-600 text-white'
+                    ? 'border-emerald-500 bg-emerald-600 text-white'
                     : 'border-slate-600 bg-slate-800'
                 }`}
               >
@@ -185,13 +204,24 @@ function MockTaskCard({ t }: { t: T }) {
       <div className="mt-4">
         <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
           <div
-            className="h-full rounded-full bg-indigo-500 transition-all duration-700 ease-out"
+            className="h-full rounded-full bg-emerald-500 transition-all duration-700 ease-out"
             style={{ width: `${(done / 3) * 100}%` }}
           />
         </div>
         <p className="mt-1.5 text-right text-[11px] text-slate-500">
           {t('mockProgress').replace('{n}', String(done))}
         </p>
+      </div>
+      {/* handoff status: Bob works, then it comes back to you */}
+      <div className="mt-2 flex h-8 items-center justify-between gap-2 border-t border-slate-800 pt-2">
+        <p className="text-xs text-slate-400">
+          {done < 3 ? t('mockStatusDoing') : t('mockStatusDone')}
+        </p>
+        {done === 3 && (
+          <span className="animate-check-pop rounded-md bg-indigo-600 px-2.5 py-1 text-[11px] font-semibold text-white">
+            {t('mockConfirm')}
+          </span>
+        )}
       </div>
     </div>
   )
@@ -249,6 +279,9 @@ export function Landing() {
             <Wordmark />
           </a>
           <nav className="hidden items-center gap-6 text-sm text-slate-300 md:flex">
+            <a href="#how" className="hover:text-white">
+              {t('navHow')}
+            </a>
             <a href="#features" className="hover:text-white">
               {t('navFeatures')}
             </a>
@@ -304,7 +337,7 @@ export function Landing() {
                 {t('heroCta')}
               </Link>
               <a
-                href="#features"
+                href="#how"
                 className="group text-sm font-medium text-indigo-400 hover:text-indigo-300"
               >
                 {t('heroSecondary')}{' '}
@@ -329,6 +362,38 @@ export function Landing() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* how it works — the send-to-someone-else flow, spelled out */}
+      <section id="how" className="mx-auto max-w-6xl scroll-mt-16 px-4 py-16 sm:px-6">
+        <Reveal>
+          <h2 className="text-center text-3xl font-bold tracking-tight text-white">
+            {t('howTitle')}
+          </h2>
+          <p className="mx-auto mt-2 max-w-2xl text-center text-lg text-indigo-300">
+            {t('howSubtitle')}
+          </p>
+        </Reveal>
+        <Reveal stagger className="mt-10 grid gap-4 md:grid-cols-3">
+          {(
+            [
+              ['1', 'howStep1Title', 'howStep1Body'],
+              ['2', 'howStep2Title', 'howStep2Body'],
+              ['3', 'howStep3Title', 'howStep3Body'],
+            ] as [string, MessageKey, MessageKey][]
+          ).map(([n, title, body]) => (
+            <div
+              key={n}
+              className="relative rounded-xl border border-slate-800 bg-slate-900/60 p-6 pt-8"
+            >
+              <span className="absolute -top-4 left-6 flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 text-sm font-bold text-white shadow-lg shadow-indigo-950/60">
+                {n}
+              </span>
+              <h3 className="font-semibold text-white">{t(title)}</h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-slate-400">{t(body)}</p>
+            </div>
+          ))}
+        </Reveal>
       </section>
 
       {/* features */}
