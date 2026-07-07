@@ -1,18 +1,22 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { Button, Card, Field, Input } from '../components/ui'
 
 export function Login() {
   const { login, register } = useAuth()
   const navigate = useNavigate()
-  const [mode, setMode] = useState<'login' | 'register'>('login')
+  const [params] = useSearchParams()
+  // The landing page's "Sign up" CTAs deep-link to /login?mode=register.
+  const [mode, setMode] = useState<'login' | 'register'>(
+    params.get('mode') === 'register' ? 'register' : 'login'
+  )
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  const [email, setEmail] = useState('alice@test.com')
-  const [password, setPassword] = useState('password123')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [userName, setUserName] = useState('')
 
   async function submit(e: FormEvent) {
@@ -39,19 +43,39 @@ export function Login() {
   }
 
   return (
-    <div className="flex h-full items-center justify-center p-6">
-      <Card className="w-full max-w-sm" title={`GodTasker — ${mode}`}>
+    <div className="flex h-full flex-col items-center justify-center gap-4 p-6">
+      <Card
+        className="w-full max-w-sm"
+        title={mode === 'login' ? 'Welcome back' : 'Create your account'}
+      >
         <form onSubmit={submit} className="flex flex-col gap-3">
           {mode === 'register' && (
-            <Field label="user_name">
-              <Input value={userName} onChange={e => setUserName(e.target.value)} required />
+            <Field label="Username">
+              <Input
+                value={userName}
+                onChange={e => setUserName(e.target.value)}
+                placeholder="how people will see you"
+                required
+              />
             </Field>
           )}
-          <Field label="email">
-            <Input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+          <Field label="Email">
+            <Input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              required
+            />
           </Field>
-          <Field label="password">
-            <Input type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+          <Field label="Password">
+            <Input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+            />
           </Field>
 
           {error && (
@@ -76,6 +100,9 @@ export function Login() {
             : 'Have an account? Log in'}
         </button>
       </Card>
+      <Link to="/" className="text-xs text-slate-500 hover:text-slate-300">
+        ← Back to home
+      </Link>
     </div>
   )
 }

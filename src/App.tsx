@@ -6,6 +6,7 @@ import { Layout } from './components/Layout'
 
 // Route-level code splitting: each page loads on first visit instead of
 // shipping in the main bundle.
+const Landing = lazy(() => import('./pages/Landing').then(m => ({ default: m.Landing })))
 const Login = lazy(() => import('./pages/Login').then(m => ({ default: m.Login })))
 const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })))
 const Tasks = lazy(() => import('./pages/Tasks').then(m => ({ default: m.Tasks })))
@@ -35,10 +36,13 @@ function PageFallback() {
 }
 
 export default function App() {
+  const { user } = useAuth()
   return (
     <Suspense fallback={<PageFallback />}>
       <Routes>
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
+        {/* Public landing at / for visitors; logged-in users get the Dashboard. */}
+        {!user && <Route path="/" element={<Landing />} />}
         <Route
           element={
             <RequireAuth>
