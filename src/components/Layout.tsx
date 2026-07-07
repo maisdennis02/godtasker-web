@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 
@@ -77,7 +78,12 @@ export function Layout() {
         </div>
       </aside>
       <main className="flex-1 overflow-auto p-6">
-        <Outlet />
+        {/* Boundary here so lazy pages load without blanking the sidebar. */}
+        <Suspense
+          fallback={<div className="p-12 text-sm text-slate-400">Loading…</div>}
+        >
+          <Outlet />
+        </Suspense>
       </main>
     </div>
   )
