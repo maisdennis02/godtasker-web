@@ -7,6 +7,7 @@ const NAV = [
   { to: '/people', label: 'People' },
   { to: '/offerings', label: 'Offerings' },
   { to: '/chat', label: 'Chat' },
+  { to: '/profile', label: 'Profile' },
   { to: '/console', label: 'API Console' },
 ]
 
@@ -45,10 +46,28 @@ export function Layout() {
           ))}
         </nav>
         <div className="mt-auto border-t border-slate-800 pt-4 text-xs text-slate-400">
-          <p className="truncate font-medium text-slate-200">
-            {user?.user_name ?? user?.email}
-          </p>
-          <p className="mb-2 truncate text-slate-500">{user?.email}</p>
+          <NavLink
+            to="/profile"
+            className="mb-2 flex items-center gap-2 rounded-md p-1 transition hover:bg-slate-800"
+          >
+            {user?.avatar?.url ? (
+              <img
+                src={user.avatar.url}
+                alt=""
+                className="h-8 w-8 shrink-0 rounded-full object-cover"
+              />
+            ) : (
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-500/20 text-[11px] font-semibold text-indigo-300">
+                {(user?.user_name ?? user?.email ?? '?').slice(0, 2).toUpperCase()}
+              </div>
+            )}
+            <span className="min-w-0">
+              <span className="block truncate font-medium text-slate-200">
+                {user?.user_name ?? user?.email}
+              </span>
+              <span className="block truncate text-slate-500">{user?.email}</span>
+            </span>
+          </NavLink>
           <button
             onClick={handleLogout}
             className="text-rose-400 hover:text-rose-300"

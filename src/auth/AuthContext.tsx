@@ -7,6 +7,7 @@ interface AuthState {
   user: AuthUser | null
   login: (email: string, password: string) => Promise<void>
   register: (data: RegisterInput) => Promise<void>
+  updateUser: (partial: Partial<AuthUser>) => void
   logout: () => void
 }
 
@@ -46,6 +47,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await login(input.email, input.password)
   }
 
+  // Merge fields into the cached user (e.g. after a profile edit) so the
+  // sidebar and avatar stay in sync. The effect above persists to localStorage.
+  function updateUser(partial: Partial<AuthUser>) {
+    setUser(prev => (prev ? { ...prev, ...partial } : prev))
+  }
+
   function logout() {
     setToken(null)
     setUser(null)
@@ -53,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // AuthProvider only re-renders when `user` changes, so a fresh value object
   // here is created exactly when it should be.
-  const value: AuthState = { user, login, register, logout }
+  const value: AuthState = { user, login, register, updateUser, logout }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

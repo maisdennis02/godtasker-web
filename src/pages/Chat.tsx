@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom'
 import { api } from '../lib/api'
 import { useAuth } from '../auth/AuthContext'
 import { ChatWindow } from '../chat/ChatWindow'
+import { useBlockedEmails } from '../lib/blocks'
 import { Button, Input } from '../components/ui'
 import type { Conversation } from '../types'
 
@@ -13,6 +14,7 @@ export function Chat() {
   const [params] = useSearchParams()
   const [selected, setSelected] = useState<string | null>(params.get('peer'))
   const [newEmail, setNewEmail] = useState('')
+  const blockedEmails = useBlockedEmails()
 
   const { data } = useQuery({
     queryKey: ['conversations', me],
@@ -29,11 +31,12 @@ export function Chat() {
     const set = new Set<string>()
     data?.forEach(c => {
       const other = c.user_email === me ? c.worker_email : c.user_email
-      if (other) set.add(other)
+      if (other && !blockedEmails.has(other)) set.add(other)
     })
+    // Keep an explicitly opened peer even if blocked, so the window still loads.
     if (selected) set.add(selected)
     return Array.from(set)
-  }, [data, me, selected])
+  }, [data, me, selected, blockedEmails])
 
   return (
     <div className="grid h-[calc(100vh-3rem)] grid-cols-[260px_1fr] gap-4">

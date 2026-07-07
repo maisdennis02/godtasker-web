@@ -24,7 +24,18 @@ export interface User {
   linkedin?: string | null
   occupation?: string | null
   points?: number | null
+  flag_count?: number | null
+  flagged_list?: string[] | null
+  blocked_list?: string[] | null
   avatar?: FileRef | null
+}
+
+export interface SubTask {
+  id?: number | string
+  description?: string
+  complete?: boolean
+  order?: number
+  weige_percentage?: number
 }
 
 export interface Task {
@@ -33,6 +44,7 @@ export interface Task {
   description?: string
   status?: unknown
   status_bar?: number
+  sub_task_list?: SubTask[] | null
   points?: number
   price?: number
   requester_email?: string
@@ -51,6 +63,8 @@ export interface Offering {
   creator_id?: number
   name?: string
   description?: string
+  sub_task_list?: SubTask[] | null
+  task_attributes?: unknown
   price?: number
   confirm_photo_option?: number
   tenure?: number
@@ -83,6 +97,14 @@ export interface AuthUser {
   id: number
   email: string
   user_name?: string
+  first_name?: string | null
+  last_name?: string | null
+  birth_date?: string | null
+  gender?: string | null
+  instagram?: string | null
+  linkedin?: string | null
+  bio?: string | null
+  subscriber?: boolean
   avatar?: FileRef | null
 }
 

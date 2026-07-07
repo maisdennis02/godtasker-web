@@ -33,11 +33,22 @@ export function localToISO(local: string): string {
   return Number.isNaN(d.getTime()) ? local : d.toISOString()
 }
 
-// Current local time formatted for a datetime-local input's `min`/`value`.
-export function nowLocalInputValue(): string {
-  const d = new Date()
+// A Date -> local "YYYY-MM-DDTHH:mm" string (the datetime-local / API-bound shape).
+export function toLocalInput(d: Date): string {
   const pad = (n: number) => String(n).padStart(2, '0')
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(
     d.getDate()
   )}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+// Current local time formatted for a datetime-local input's `min`/`value`.
+export function nowLocalInputValue(): string {
+  return toLocalInput(new Date())
+}
+
+// Parse a local "YYYY-MM-DDTHH:mm" string into a Date (local time). null when blank/invalid.
+export function parseLocalInput(local: string): Date | null {
+  if (!local) return null
+  const d = new Date(local)
+  return Number.isNaN(d.getTime()) ? null : d
 }

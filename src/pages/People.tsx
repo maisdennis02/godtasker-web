@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { api } from '../lib/api'
 import { useAuth } from '../auth/AuthContext'
 import { Button, Input } from '../components/ui'
+import { UserActionsMenu } from '../components/UserActionsMenu'
 import type { User } from '../types'
 
 // Deterministic avatar tint so each person keeps the same color across renders.
@@ -93,44 +94,55 @@ function PersonCard({
   pending,
   onToggleFollow,
   onChat,
+  onOpen,
 }: {
   person: User
   followed: boolean
   pending: boolean
   onToggleFollow: () => void
   onChat: () => void
+  onOpen: () => void
 }) {
+  // Blocked people are filtered out of the list, so the menu here only ever
+  // offers Block/Report — but pass the real flag in case that changes.
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-slate-800 bg-slate-900/60 p-4">
-      <div className="flex items-center gap-3">
-        <Avatar person={person} />
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-medium text-slate-100">
-            {displayName(person)}
-          </p>
-          <p className="truncate text-xs text-slate-500">{person.email}</p>
-        </div>
-        {typeof person.points === 'number' && (
-          <span className="shrink-0 rounded bg-slate-800 px-1.5 py-0.5 text-[11px] font-medium text-amber-300">
-            {person.points} pts
-          </span>
-        )}
-      </div>
-
-      {(person.occupation || person.bio) && (
-        <div className="min-w-0">
-          {person.occupation && (
-            <p className="truncate text-xs font-medium text-slate-400">
-              {person.occupation}
+      <button
+        type="button"
+        onClick={onOpen}
+        className="flex flex-col gap-3 text-left"
+        aria-label={`View ${displayName(person)}'s profile`}
+      >
+        <div className="flex items-center gap-3">
+          <Avatar person={person} />
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-medium text-slate-100 hover:text-white">
+              {displayName(person)}
             </p>
-          )}
-          {person.bio && (
-            <p className="line-clamp-2 text-xs text-slate-500">{person.bio}</p>
+            <p className="truncate text-xs text-slate-500">{person.email}</p>
+          </div>
+          {typeof person.points === 'number' && (
+            <span className="shrink-0 rounded bg-slate-800 px-1.5 py-0.5 text-[11px] font-medium text-amber-300">
+              {person.points} pts
+            </span>
           )}
         </div>
-      )}
 
-      <div className="mt-auto flex gap-1.5">
+        {(person.occupation || person.bio) && (
+          <div className="min-w-0">
+            {person.occupation && (
+              <p className="truncate text-xs font-medium text-slate-400">
+                {person.occupation}
+              </p>
+            )}
+            {person.bio && (
+              <p className="line-clamp-2 text-xs text-slate-500">{person.bio}</p>
+            )}
+          </div>
+        )}
+      </button>
+
+      <div className="mt-auto flex items-stretch gap-1.5">
         <FollowButton
           followed={followed}
           pending={pending}
@@ -139,6 +151,7 @@ function PersonCard({
         <Button className="flex-1" onClick={onChat}>
           Chat
         </Button>
+        <UserActionsMenu target={person} blocked={false} />
       </div>
     </div>
   )
@@ -200,18 +213,24 @@ export function People() {
     onSettled: () => setPendingId(null),
   })
 
-  const query = filter.trim().toLowerCase()
-  const people = (data ?? [])
-    .filter(u => u.id !== user?.id)
-    .filter(u => {
-      if (!query) return true
-      return (
-        displayName(u).toLowerCase().includes(query) ||
-        (u.email ?? '').toLowerCase().includes(query)
-      )
-    })
+  // My own record carries blocked_list — hide anyone I've blocked.
+  const myRecord = (data ?? []).find(u => u.id === user?.id)
+  const blockedEmails = new Set(myRecord?.blocked_list ?? [])
 
-  const hasPeople = (data ?? []).filter(u => u.id !== user?.id).length > 0
+  const visible = (data ?? []).filter(
+    u => u.id !== user?.id && !blockedEmails.has(u.email)
+  )
+
+  const query = filter.trim().toLowerCase()
+  const people = visible.filter(u => {
+    if (!query) return true
+    return (
+      displayName(u).toLowerCase().includes(query) ||
+      (u.email ?? '').toLowerCase().includes(query)
+    )
+  })
+
+  const hasPeople = visible.length > 0
 
   return (
     <div>
@@ -271,6 +290,7 @@ export function People() {
               onChat={() =>
                 navigate(`/chat?peer=${encodeURIComponent(p.email)}`)
               }
+              onOpen={() => navigate(`/people/${p.id}`)}
             />
           ))}
         </div>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../lib/api'
 import { useAuth } from '../auth/AuthContext'
@@ -61,6 +61,19 @@ function OfferingDetails({ offering }: { offering: Offering }) {
         }
       />
       <DetailRow label="Offering ID" value={`#${offering.id}`} />
+      {Array.isArray(offering.sub_task_list) && offering.sub_task_list.length > 0 && (
+        <div className="border-t border-slate-800 pt-2">
+          <p className="mb-1 text-slate-500">Subtasks</p>
+          <ul className="space-y-1">
+            {offering.sub_task_list.map((s, i) => (
+              <li key={s.id ?? i} className="flex gap-2 text-slate-300">
+                <span className="text-slate-600">{i + 1}.</span>
+                <span>{s.description || `Item ${i + 1}`}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   )
 }
@@ -69,12 +82,16 @@ function OfferingCard({
   offering,
   onRequest,
   requesting,
+  onEdit,
+  editing,
   onDelete,
   deleting,
 }: {
   offering: Offering
   onRequest?: () => void
   requesting?: boolean
+  onEdit?: () => void
+  editing?: boolean
   onDelete?: () => void
   deleting?: boolean
 }) {
@@ -120,6 +137,15 @@ function OfferingCard({
             {offering.tenure} day{offering.tenure === 1 ? '' : 's'}
           </p>
         )}
+
+        {!expanded &&
+          Array.isArray(offering.sub_task_list) &&
+          offering.sub_task_list.length > 0 && (
+            <p className="text-xs text-slate-500">
+              {offering.sub_task_list.length} step
+              {offering.sub_task_list.length === 1 ? '' : 's'}
+            </p>
+          )}
       </button>
 
       {expanded && <OfferingDetails offering={offering} />}
@@ -134,14 +160,30 @@ function OfferingCard({
         </Button>
       )}
 
-      {onDelete && (
-        <button
-          className="mt-1 inline-flex w-full items-center justify-center rounded-md border border-rose-500/40 bg-rose-500/10 px-3 py-1.5 text-sm font-medium text-rose-300 transition hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:opacity-50"
-          onClick={onDelete}
-          disabled={deleting}
-        >
-          {deleting ? 'Deleting…' : 'Delete'}
-        </button>
+      {(onEdit || onDelete) && (
+        <div className="mt-1 flex gap-2">
+          {onEdit && (
+            <button
+              className={`flex-1 inline-flex items-center justify-center rounded-md border px-3 py-1.5 text-sm font-medium transition ${
+                editing
+                  ? 'border-indigo-500/60 bg-indigo-500/15 text-indigo-200'
+                  : 'border-slate-600 bg-slate-800 text-slate-200 hover:bg-slate-700'
+              }`}
+              onClick={onEdit}
+            >
+              {editing ? 'Editing…' : 'Edit'}
+            </button>
+          )}
+          {onDelete && (
+            <button
+              className="flex-1 inline-flex items-center justify-center rounded-md border border-rose-500/40 bg-rose-500/10 px-3 py-1.5 text-sm font-medium text-rose-300 transition hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+              onClick={onDelete}
+              disabled={deleting}
+            >
+              {deleting ? 'Deleting…' : 'Delete'}
+            </button>
+          )}
+        </div>
       )}
     </div>
   )
@@ -200,23 +242,77 @@ export function Offerings() {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [price, setPrice] = useState('')
+  const [subtasks, setSubtasks] = useState<string[]>([])
+  // When set, the form edits this offering instead of creating a new one.
+  const [editing, setEditing] = useState<Offering | null>(null)
+  const formRef = useRef<HTMLDivElement>(null)
+
+  // Build the sub_task_list payload from the form's text rows.
+  const subtaskPayload = () =>
+    subtasks
+      .map(s => s.trim())
+      .filter(Boolean)
+      .map((d, i) => ({ id: i + 1, description: d, complete: false, order: i }))
+
+  function resetForm() {
+    setEditing(null)
+    setName('')
+    setDescription('')
+    setPrice('')
+    setSubtasks([])
+  }
 
   const create = useMutation({
     mutationFn: async () => {
+      const list = subtaskPayload()
       await api.post('/offerings', {
         name,
         description,
         price: price ? Number(price) : undefined,
+        // Stored on the offering and copied onto the spawned task when requested.
+        sub_task_list: list.length ? list : undefined,
         display_in_profile: true,
       })
     },
     onSuccess: () => {
-      setName('')
-      setDescription('')
-      setPrice('')
+      resetForm()
       qc.invalidateQueries({ queryKey: ['offerings'] })
     },
   })
+
+  // Edit = save changes to an existing offering. Fields the form doesn't expose
+  // (tenure, photo confirmation, etc.) are preserved from the edited offering.
+  const update = useMutation({
+    mutationFn: async () => {
+      if (!editing) return
+      await api.put(`/offerings/${editing.id}`, {
+        name,
+        description,
+        price: price ? Number(price) : null,
+        sub_task_list: subtaskPayload(),
+        task_attributes: editing.task_attributes,
+        confirm_photo_option: editing.confirm_photo_option,
+        tenure: editing.tenure,
+        display_in_profile: editing.display_in_profile,
+      })
+    },
+    onSuccess: () => {
+      resetForm()
+      qc.invalidateQueries({ queryKey: ['offerings'] })
+    },
+  })
+
+  // Load an offering into the form for editing and scroll the form into view.
+  function startEdit(offering: Offering) {
+    setEditing(offering)
+    setName(offering.name ?? '')
+    setDescription(offering.description ?? '')
+    setPrice(offering.price != null ? String(offering.price) : '')
+    setSubtasks((offering.sub_task_list ?? []).map(s => s.description ?? ''))
+    create.reset()
+    update.reset()
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
   const remove = useMutation({
     mutationFn: async (offeringId: number) => {
@@ -253,6 +349,8 @@ export function Offerings() {
                 <OfferingCard
                   key={o.id}
                   offering={o}
+                  editing={editing?.id === o.id}
+                  onEdit={() => startEdit(o)}
                   deleting={deletingId === o.id}
                   onDelete={() => remove.mutate(o.id)}
                 />
@@ -321,7 +419,23 @@ export function Offerings() {
         </div>
       </div>
 
-      <Card title="Create an offering">
+      <div ref={formRef}>
+      <Card
+        title={
+          <div className="flex items-center justify-between">
+            <span>{editing ? 'Edit offering' : 'Create an offering'}</span>
+            {editing && (
+              <button
+                type="button"
+                onClick={resetForm}
+                className="text-xs font-medium text-slate-400 hover:text-slate-200"
+              >
+                Cancel
+              </button>
+            )}
+          </div>
+        }
+      >
         <div className="flex flex-col gap-3">
           <Field label="name">
             <Input value={name} onChange={e => setName(e.target.value)} />
@@ -340,22 +454,71 @@ export function Offerings() {
               onChange={e => setPrice(e.target.value)}
             />
           </Field>
-          <Button
-            onClick={() => create.mutate()}
-            disabled={create.isPending || !name}
-          >
-            {create.isPending ? 'Creating…' : 'Create offering'}
-          </Button>
-          {create.isSuccess && (
+          <Field label="subtasks">
+            <div className="flex flex-col gap-2">
+              {subtasks.map((s, i) => (
+                <div key={i} className="flex gap-2">
+                  <Input
+                    value={s}
+                    placeholder={`Step ${i + 1}`}
+                    onChange={e =>
+                      setSubtasks(prev =>
+                        prev.map((v, j) => (j === i ? e.target.value : v))
+                      )
+                    }
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSubtasks(prev => prev.filter((_, j) => j !== i))
+                    }
+                    aria-label={`Remove subtask ${i + 1}`}
+                    className="shrink-0 rounded-md border border-slate-700 px-2 text-slate-400 transition hover:bg-slate-800 hover:text-slate-200"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => setSubtasks(prev => [...prev, ''])}
+                className="self-start text-xs font-medium text-indigo-400 hover:text-indigo-300"
+              >
+                + Add subtask
+              </button>
+            </div>
+          </Field>
+          {editing ? (
+            <Button
+              onClick={() => update.mutate()}
+              disabled={update.isPending || !name}
+            >
+              {update.isPending ? 'Saving…' : 'Save changes'}
+            </Button>
+          ) : (
+            <Button
+              onClick={() => create.mutate()}
+              disabled={create.isPending || !name}
+            >
+              {create.isPending ? 'Creating…' : 'Create offering'}
+            </Button>
+          )}
+          {!editing && create.isSuccess && (
             <p className="text-xs text-emerald-400">Offering created ✓</p>
           )}
-          {create.error && (
+          {!editing && create.error && (
             <p className="text-xs text-rose-400">
               {(create.error as Error).message}
             </p>
           )}
+          {editing && update.error && (
+            <p className="text-xs text-rose-400">
+              {(update.error as Error).message}
+            </p>
+          )}
         </div>
       </Card>
+      </div>
     </div>
   )
 }
