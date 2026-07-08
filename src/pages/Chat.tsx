@@ -6,7 +6,8 @@ import { useAuth } from '../auth/AuthContext'
 import { ChatWindow } from '../chat/ChatWindow'
 import { useBlockedEmails } from '../lib/blocks'
 import { Button, Input } from '../components/ui'
-import type { Conversation } from '../types'
+import { Avatar, displayName } from '../components/Avatar'
+import type { Conversation, User } from '../types'
 
 export function Chat() {
   const { user } = useAuth()
@@ -26,6 +27,18 @@ export function Chat() {
     },
   })
 
+  // People I follow — chat candidates even before any conversation exists.
+  const following = useQuery({
+    queryKey: ['following', user?.user_name],
+    enabled: !!user?.user_name,
+    queryFn: async () => {
+      const res = await api.get('/users/following', {
+        params: { contactName: user?.user_name, nameFilter: '' },
+      })
+      return res.data as User[]
+    },
+  })
+
   // Build a distinct list of counterpart emails from the conversation headers.
   const counterparts = useMemo(() => {
     const set = new Set<string>()
@@ -37,6 +50,14 @@ export function Chat() {
     if (selected) set.add(selected)
     return Array.from(set)
   }, [data, me, selected, blockedEmails])
+
+  // Followed people without an open conversation yet — one click starts one.
+  const followingToShow = useMemo(() => {
+    const inChat = new Set(counterparts)
+    return (following.data ?? []).filter(
+      u => u.email && u.email !== me && !inChat.has(u.email) && !blockedEmails.has(u.email)
+    )
+  }, [following.data, counterparts, me, blockedEmails])
 
   return (
     // 2rem = the main area's p-4 top+bottom padding.
@@ -79,10 +100,32 @@ export function Chat() {
             </button>
           ))}
           {counterparts.length === 0 && (
-            <p className="px-3 py-2 text-xs text-slate-500">
-              No conversations yet. Add a user email above, or start one from
-              the People page.
+            <p className="px-2.5 py-1.5 text-xs text-slate-500">
+              No conversations yet — pick someone below, or add an email above.
             </p>
+          )}
+
+          {followingToShow.length > 0 && (
+            <>
+              <p className="mt-2 mb-1 px-2.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                Following
+              </p>
+              {followingToShow.map(person => (
+                <button
+                  key={person.id}
+                  onClick={() => setSelected(person.email)}
+                  className="mb-1 flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm text-slate-300 transition hover:bg-slate-800"
+                >
+                  <Avatar user={person} size="sm" />
+                  <span className="min-w-0">
+                    <span className="block truncate">{displayName(person)}</span>
+                    <span className="block truncate text-xs text-slate-500">
+                      {person.email}
+                    </span>
+                  </span>
+                </button>
+              ))}
+            </>
           )}
         </div>
       </div>
