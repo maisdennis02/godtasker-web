@@ -35,8 +35,10 @@ export function ChatWindow({
         const thread = await api.get(`/messages/${id}/thread`)
         if (!active) return
         setMessages(thread.data as ChatMessage[])
-      } catch {
-        if (active) setError('Could not open conversation.')
+      } catch (err) {
+        const e = err as { response?: { data?: { error?: string } } }
+        if (active)
+          setError(e.response?.data?.error ?? 'Could not open conversation.')
       }
     }
     open()
