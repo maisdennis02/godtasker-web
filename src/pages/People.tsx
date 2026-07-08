@@ -5,49 +5,8 @@ import { api } from '../lib/api'
 import { useAuth } from '../auth/AuthContext'
 import { Button, Input } from '../components/ui'
 import { UserActionsMenu } from '../components/UserActionsMenu'
+import { Avatar, displayName } from '../components/Avatar'
 import type { User } from '../types'
-
-// Deterministic avatar tint so each person keeps the same color across renders.
-const AVATAR_TINTS = [
-  'bg-indigo-500/20 text-indigo-300',
-  'bg-emerald-500/20 text-emerald-300',
-  'bg-amber-500/20 text-amber-300',
-  'bg-rose-500/20 text-rose-300',
-  'bg-sky-500/20 text-sky-300',
-  'bg-violet-500/20 text-violet-300',
-]
-
-function displayName(u: User): string {
-  const full = [u.first_name, u.last_name].filter(Boolean).join(' ').trim()
-  return u.user_name || full || `user #${u.id}`
-}
-
-function initials(u: User): string {
-  const name = displayName(u)
-  const parts = name.split(/\s+/).filter(Boolean)
-  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
-  return name.slice(0, 2).toUpperCase()
-}
-
-function Avatar({ person }: { person: User }) {
-  const tint = AVATAR_TINTS[person.id % AVATAR_TINTS.length]
-  if (person.avatar?.url) {
-    return (
-      <img
-        src={person.avatar.url}
-        alt=""
-        className="h-10 w-10 shrink-0 rounded-full object-cover"
-      />
-    )
-  }
-  return (
-    <div
-      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${tint}`}
-    >
-      {initials(person)}
-    </div>
-  )
-}
 
 function FollowButton({
   followed,
@@ -64,7 +23,7 @@ function FollowButton({
       <button
         onClick={onClick}
         disabled={pending}
-        className="group inline-flex flex-1 items-center justify-center rounded-md bg-emerald-600/20 px-3 py-1.5 text-sm font-medium text-emerald-300 transition hover:bg-rose-600/20 hover:text-rose-300 disabled:cursor-not-allowed disabled:opacity-50"
+        className="group inline-flex flex-1 items-center justify-center rounded-md bg-emerald-600/20 px-2 py-1 text-xs font-medium text-emerald-300 transition hover:bg-rose-600/20 hover:text-rose-300 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {pending ? (
           'Working…'
@@ -79,7 +38,7 @@ function FollowButton({
   }
   return (
     <Button
-      className="flex-1 bg-slate-700 hover:bg-slate-600"
+      className="flex-1 bg-slate-700 px-2 py-1 text-xs hover:bg-slate-600"
       onClick={onClick}
       disabled={pending}
     >
@@ -106,17 +65,17 @@ function PersonCard({
   // Blocked people are filtered out of the list, so the menu here only ever
   // offers Block/Report — but pass the real flag in case that changes.
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-slate-800 bg-slate-900/60 p-4">
+    <div className="flex flex-col gap-2 rounded-lg border border-slate-800 bg-slate-900/60 p-3">
       <button
         type="button"
         onClick={onOpen}
-        className="flex flex-col gap-3 text-left"
+        className="flex flex-col gap-1.5 text-left"
         aria-label={`View ${displayName(person)}'s profile`}
       >
-        <div className="flex items-center gap-3">
-          <Avatar person={person} />
+        <div className="flex items-center gap-2.5">
+          <Avatar user={person} size="sm" />
           <div className="min-w-0 flex-1">
-            <p className="truncate font-medium text-slate-100 hover:text-white">
+            <p className="truncate text-sm font-medium text-slate-100 hover:text-white">
               {displayName(person)}
             </p>
             <p className="truncate text-xs text-slate-500">{person.email}</p>
@@ -136,7 +95,7 @@ function PersonCard({
               </p>
             )}
             {person.bio && (
-              <p className="line-clamp-2 text-xs text-slate-500">{person.bio}</p>
+              <p className="line-clamp-1 text-xs text-slate-500">{person.bio}</p>
             )}
           </div>
         )}
@@ -148,7 +107,7 @@ function PersonCard({
           pending={pending}
           onClick={onToggleFollow}
         />
-        <Button className="flex-1" onClick={onChat}>
+        <Button className="flex-1 px-2 py-1 text-xs" onClick={onChat}>
           Chat
         </Button>
         <UserActionsMenu target={person} blocked={false} />
@@ -159,11 +118,11 @@ function PersonCard({
 
 function Skeleton() {
   return (
-    <div className="grid animate-pulse gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      {Array.from({ length: 6 }).map((_, i) => (
+    <div className="grid animate-pulse gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {Array.from({ length: 8 }).map((_, i) => (
         <div
           key={i}
-          className="h-36 rounded-lg border border-slate-800 bg-slate-900/60"
+          className="h-24 rounded-lg border border-slate-800 bg-slate-900/60"
         />
       ))}
     </div>
@@ -234,9 +193,9 @@ export function People() {
 
   return (
     <div>
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
+      <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
         <div>
-          <h2 className="text-xl font-bold text-white">People</h2>
+          <h2 className="text-lg font-bold text-white">People</h2>
           <p className="mt-1 text-sm text-slate-400">
             Everyone is a peer — follow people, chat, or send them a task.
           </p>
@@ -249,7 +208,7 @@ export function People() {
         )}
       </div>
 
-      <div className="relative mb-4 max-w-xs">
+      <div className="relative mb-3 max-w-xs">
         <Input
           placeholder="Search by name or email…"
           value={filter}
@@ -274,7 +233,7 @@ export function People() {
       )}
 
       {data && (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {people.map(p => (
             <PersonCard
               key={p.id}

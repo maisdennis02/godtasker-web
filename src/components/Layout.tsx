@@ -23,8 +23,8 @@ export function Layout() {
 
   return (
     <div className="flex h-full">
-      <aside className="flex w-56 shrink-0 flex-col border-r border-slate-800 bg-slate-900/80 p-4">
-        <div className="mb-6">
+      <aside className="flex w-48 shrink-0 flex-col border-r border-slate-800 bg-slate-900/80 p-3">
+        <div className="mb-4">
           <h1 className="text-lg font-bold text-white">GodTasker</h1>
           <p className="text-xs text-slate-500">web client</p>
         </div>
@@ -35,7 +35,7 @@ export function Layout() {
               to={item.to}
               end={item.end}
               className={({ isActive }) =>
-                `rounded-md px-3 py-2 text-sm transition ${
+                `rounded-md px-2.5 py-1.5 text-sm transition ${
                   isActive
                     ? 'bg-indigo-600 text-white'
                     : 'text-slate-300 hover:bg-slate-800'
@@ -77,7 +77,7 @@ export function Layout() {
           </button>
         </div>
       </aside>
-      <main className="flex-1 overflow-auto p-6">
+      <main className="flex-1 overflow-auto p-4">
         {/* Boundary here so lazy pages load without blanking the sidebar. */}
         <Suspense
           fallback={<div className="p-12 text-sm text-slate-400">Loading…</div>}

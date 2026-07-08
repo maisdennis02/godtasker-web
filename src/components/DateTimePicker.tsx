@@ -38,6 +38,7 @@ function timeOf(d: Date): string {
 export function DateTimePicker({ value, onChange, min, placeholder }: Props) {
   const [open, setOpen] = useState(false)
   const wrapRef = useRef<HTMLDivElement>(null)
+  const popRef = useRef<HTMLDivElement>(null)
 
   const selected = parseLocalInput(value) ?? undefined
   const minDate = parseLocalInput(min ?? '')
@@ -55,7 +56,11 @@ export function DateTimePicker({ value, onChange, min, placeholder }: Props) {
       }
     }
     function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') setOpen(false)
+      if (e.key === 'Escape') {
+        // Consume the key so an enclosing Modal doesn't close too.
+        e.stopPropagation()
+        setOpen(false)
+      }
     }
     document.addEventListener('mousedown', onDown)
     document.addEventListener('keydown', onKey)
@@ -63,6 +68,12 @@ export function DateTimePicker({ value, onChange, min, placeholder }: Props) {
       document.removeEventListener('mousedown', onDown)
       document.removeEventListener('keydown', onKey)
     }
+  }, [open])
+
+  // Inside a scroll container (e.g. a Modal body) the popover can open past
+  // the visible edge — bring it into view.
+  useEffect(() => {
+    if (open) popRef.current?.scrollIntoView({ block: 'nearest' })
   }, [open])
 
   function emit(day: Date, hhmm: string) {
@@ -108,7 +119,10 @@ export function DateTimePicker({ value, onChange, min, placeholder }: Props) {
       </button>
 
       {open && (
-        <div className="absolute z-20 mt-1 rounded-lg border border-slate-700 bg-slate-900 p-2 shadow-xl">
+        <div
+          ref={popRef}
+          className="absolute z-20 mt-1 rounded-lg border border-slate-700 bg-slate-900 p-2 shadow-xl"
+        >
           <DayPicker
             mode="single"
             style={compactCalendar}

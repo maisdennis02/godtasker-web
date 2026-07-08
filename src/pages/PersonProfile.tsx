@@ -6,28 +6,9 @@ import { useAuth } from '../auth/AuthContext'
 import { BLOCKS_KEY, useBlockedEmails } from '../lib/blocks'
 import { Button, Card } from '../components/ui'
 import { UserActionsMenu } from '../components/UserActionsMenu'
+import { Avatar, displayName } from '../components/Avatar'
+import { OfferingCard } from '../components/OfferingCard'
 import type { Offering, User } from '../types'
-
-// Deterministic avatar tint, matching the People list.
-const AVATAR_TINTS = [
-  'bg-indigo-500/20 text-indigo-300',
-  'bg-emerald-500/20 text-emerald-300',
-  'bg-amber-500/20 text-amber-300',
-  'bg-rose-500/20 text-rose-300',
-  'bg-sky-500/20 text-sky-300',
-  'bg-violet-500/20 text-violet-300',
-]
-
-function displayName(u: User): string {
-  const full = [u.first_name, u.last_name].filter(Boolean).join(' ').trim()
-  return u.user_name || full || u.email || `user #${u.id}`
-}
-
-function initials(name: string): string {
-  const parts = name.split(/\s+/).filter(Boolean)
-  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
-  return name.slice(0, 2).toUpperCase()
-}
 
 function instagramUrl(handle: string): string {
   const h = handle.trim().replace(/^@/, '')
@@ -38,68 +19,13 @@ function externalUrl(value: string): string {
   return /^https?:\/\//i.test(value) ? value : `https://${value}`
 }
 
-function OfferingCard({
-  offering,
-  onRequest,
-  requesting,
-}: {
-  offering: Offering
-  onRequest: () => void
-  requesting: boolean
-}) {
-  const steps = Array.isArray(offering.sub_task_list)
-    ? offering.sub_task_list.length
-    : 0
-  return (
-    <div className="flex flex-col gap-2 rounded-lg border border-slate-800 bg-slate-900/60 p-4">
-      <div className="flex items-start justify-between gap-2">
-        <p className="min-w-0 font-medium text-slate-100">
-          {offering.name || `Offering #${offering.id}`}
-        </p>
-        {offering.price != null && (
-          <span className="shrink-0 rounded bg-emerald-500/15 px-1.5 py-0.5 text-xs font-medium text-emerald-300">
-            ${offering.price}
-          </span>
-        )}
-      </div>
-
-      {offering.description && (
-        <p className="line-clamp-3 text-xs text-slate-400">
-          {offering.description}
-        </p>
-      )}
-
-      <div className="flex gap-3 text-xs text-slate-500">
-        {offering.tenure != null && offering.tenure > 0 && (
-          <span>
-            {offering.tenure} day{offering.tenure === 1 ? '' : 's'}
-          </span>
-        )}
-        {steps > 0 && (
-          <span>
-            {steps} step{steps === 1 ? '' : 's'}
-          </span>
-        )}
-      </div>
-
-      <Button
-        className="mt-1 w-full"
-        onClick={onRequest}
-        disabled={requesting}
-      >
-        {requesting ? 'Requesting…' : 'Request'}
-      </Button>
-    </div>
-  )
-}
-
 function OfferingsSkeleton() {
   return (
-    <div className="grid animate-pulse gap-3 sm:grid-cols-2">
-      {Array.from({ length: 2 }).map((_, i) => (
+    <div className="grid animate-pulse gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
+      {Array.from({ length: 3 }).map((_, i) => (
         <div
           key={i}
-          className="h-32 rounded-lg border border-slate-800 bg-slate-900/60"
+          className="h-24 rounded-lg border border-slate-800 bg-slate-900/60"
         />
       ))}
     </div>
@@ -193,11 +119,11 @@ export function PersonProfile() {
   const blocked = !!person && blockedEmails.has(person.email)
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-4xl">
       <button
         type="button"
         onClick={() => navigate('/people')}
-        className="mb-4 text-sm text-slate-400 transition hover:text-slate-200"
+        className="mb-3 text-sm text-slate-400 transition hover:text-slate-200"
       >
         ← Back to people
       </button>
@@ -213,24 +139,10 @@ export function PersonProfile() {
       )}
 
       {person && (
-        <div className="space-y-4">
+        <div className="space-y-3">
           <Card>
             <div className="flex items-start gap-4">
-              {person.avatar?.url ? (
-                <img
-                  src={person.avatar.url}
-                  alt=""
-                  className="h-20 w-20 shrink-0 rounded-full object-cover"
-                />
-              ) : (
-                <div
-                  className={`flex h-20 w-20 shrink-0 items-center justify-center rounded-full text-xl font-semibold ${
-                    AVATAR_TINTS[person.id % AVATAR_TINTS.length]
-                  }`}
-                >
-                  {initials(displayName(person))}
-                </div>
-              )}
+              <Avatar user={person} size="lg" />
               <div className="min-w-0 flex-1">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
@@ -351,12 +263,12 @@ export function PersonProfile() {
 
           {!blocked && (
           <div>
-            <h3 className="mb-3 text-sm font-semibold text-slate-200">
+            <h3 className="mb-2 text-sm font-semibold text-slate-200">
               Offerings
             </h3>
             {offeringsQ.isLoading && <OfferingsSkeleton />}
             {offerings.length > 0 && (
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
                 {offerings.map(o => (
                   <OfferingCard
                     key={o.id}

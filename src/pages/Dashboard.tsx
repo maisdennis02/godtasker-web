@@ -24,7 +24,9 @@ function greeting(): string {
   return 'Good evening'
 }
 
-function Stat({
+// Inline value+label chip — the breakdown reads as one scannable strip
+// instead of a grid of boxes.
+function StatChip({
   label,
   value,
   tone = 'default',
@@ -37,10 +39,10 @@ function Stat({
   const dimmed = n === 0 && tone !== 'default'
   const t = dimmed ? TONE.default : TONE[tone]
   return (
-    <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
-      <p className={`text-2xl font-bold ${t.value}`}>{n}</p>
-      <p className="text-xs text-slate-400">{label}</p>
-    </div>
+    <span className="inline-flex items-baseline gap-1.5 rounded-md bg-slate-800/60 px-2 py-1">
+      <span className={`text-sm font-bold ${t.value}`}>{n}</span>
+      <span className="text-[11px] text-slate-400">{label}</span>
+    </span>
   )
 }
 
@@ -61,7 +63,7 @@ function AttentionCard({
   return (
     <Link
       to="/tasks"
-      className={`flex flex-col rounded-lg border p-4 transition hover:border-slate-600 ${
+      className={`flex flex-col rounded-lg border p-3 transition hover:border-slate-600 ${
         active ? 'border-slate-700 bg-slate-900' : 'border-slate-800 bg-slate-900/40'
       }`}
     >
@@ -71,8 +73,8 @@ function AttentionCard({
           {active ? 'needs action' : 'all clear'}
         </span>
       </div>
-      <p className={`mt-2 text-3xl font-bold ${t.value}`}>{value}</p>
-      <p className="mt-1 text-xs text-slate-500">{hint}</p>
+      <p className={`mt-1 text-2xl font-bold ${t.value}`}>{value}</p>
+      <p className="text-xs text-slate-500">{hint}</p>
     </Link>
   )
 }
@@ -103,11 +105,11 @@ function RoleSection({
 }) {
   const pct = total > 0 ? Math.round((finished / total) * 100) : 0
   return (
-    <section className="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
-      <div className="mb-4 flex items-end justify-between">
-        <div>
+    <section className="rounded-xl border border-slate-800 bg-slate-900/40 p-3">
+      <div className="mb-2 flex items-end justify-between">
+        <div className="flex items-baseline gap-2">
           <h3 className="text-sm font-semibold text-slate-300">{title}</h3>
-          <p className="mt-1 text-3xl font-bold text-white">{total}</p>
+          <p className="text-2xl font-bold text-white">{total}</p>
         </div>
         <Link
           to="/tasks"
@@ -117,7 +119,7 @@ function RoleSection({
         </Link>
       </div>
 
-      <div className="mb-4">
+      <div className="mb-2">
         <div className="mb-1 flex justify-between text-xs text-slate-400">
           <span>{finished} finished</span>
           <span>{pct}%</span>
@@ -130,15 +132,14 @@ function RoleSection({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Stat label="In progress" value={initiated} />
-        <Stat label="Finished" value={finished} tone="good" />
-        <Stat label="Canceled" value={canceled} />
-        <Stat label="Overdue" value={overdue} tone="urgent" />
-        <Stat label="Due today" value={todayDue} tone="warning" />
-        <Stat label="Due tomorrow" value={tomorrowDue} />
-        <Stat label="Due this week" value={weekDue} />
-        <Stat label="Total" value={total} />
+      <div className="flex flex-wrap gap-1.5">
+        <StatChip label="in progress" value={initiated} />
+        <StatChip label="finished" value={finished} tone="good" />
+        <StatChip label="canceled" value={canceled} />
+        <StatChip label="overdue" value={overdue} tone="urgent" />
+        <StatChip label="due today" value={todayDue} tone="warning" />
+        <StatChip label="due tomorrow" value={tomorrowDue} />
+        <StatChip label="due this week" value={weekDue} />
       </div>
     </section>
   )
@@ -146,14 +147,14 @@ function RoleSection({
 
 function Skeleton() {
   return (
-    <div className="animate-pulse space-y-6">
+    <div className="animate-pulse space-y-3">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-28 rounded-lg border border-slate-800 bg-slate-900/60" />
+          <div key={i} className="h-20 rounded-lg border border-slate-800 bg-slate-900/60" />
         ))}
       </div>
-      <div className="h-56 rounded-xl border border-slate-800 bg-slate-900/40" />
-      <div className="h-56 rounded-xl border border-slate-800 bg-slate-900/40" />
+      <div className="h-28 rounded-xl border border-slate-800 bg-slate-900/40" />
+      <div className="h-28 rounded-xl border border-slate-800 bg-slate-900/40" />
     </div>
   )
 }
@@ -186,12 +187,12 @@ export function Dashboard() {
 
   return (
     <div>
-      <div className="mb-6 flex items-start justify-between">
+      <div className="mb-3 flex items-start justify-between">
         <div>
-          <h2 className="text-xl font-bold text-white">
+          <h2 className="text-lg font-bold text-white">
             {greeting()}, {name} 👋
           </h2>
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="text-xs text-slate-400">
             Here's what's on your plate today.
           </p>
         </div>
@@ -224,7 +225,7 @@ export function Dashboard() {
       )}
 
       {data && (
-        <div className="space-y-6">
+        <div className="space-y-3">
           {/* Attention row — surfaces what's urgent across both roles. */}
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <AttentionCard
@@ -253,7 +254,7 @@ export function Dashboard() {
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-4 rounded-lg border border-slate-800 bg-slate-900/40 px-4 py-3 text-sm text-slate-400">
+          <div className="flex flex-wrap items-center gap-4 rounded-lg border border-slate-800 bg-slate-900/40 px-3 py-2 text-sm text-slate-400">
             <span>
               <span className="font-semibold text-white">
                 {num(data.countFollowing)}

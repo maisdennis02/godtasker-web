@@ -1,8 +1,9 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../lib/api'
 import { useAuth } from '../auth/AuthContext'
-import { Button, Card, Field, Input, Textarea } from '../components/ui'
+import { Button, DetailRow, Field, Input, Textarea } from '../components/ui'
+import { Modal } from '../components/Modal'
 import { DateTimePicker } from '../components/DateTimePicker'
 import { formatDate, localToISO, nowLocalInputValue, toLocalInput } from '../lib/format'
 import type { SubTask, Task, User } from '../types'
@@ -33,7 +34,7 @@ function SubtaskList({
   busy?: boolean
 }) {
   return (
-    <div className="mt-3 space-y-1.5 border-t border-slate-800 pt-3">
+    <div className="mt-2 space-y-1 border-t border-slate-800 pt-2">
       <p className="text-xs font-medium text-slate-400">Subtasks</p>
       {list.map((s, i) => (
         <label
@@ -80,18 +81,7 @@ function dueState(task: Task): { label: string; cls: string } | null {
   return null
 }
 
-// A label/value row inside the expanded panel — skips empty values.
-function DetailRow({ label, value }: { label: string; value?: string | null }) {
-  if (!value) return null
-  return (
-    <div className="flex justify-between gap-3">
-      <span className="text-slate-500">{label}</span>
-      <span className="text-right text-slate-300">{value}</span>
-    </div>
-  )
-}
-
-// The full set of task fields, shown when a card is expanded.
+// The full set of task fields, shown when a row is expanded.
 function TaskDetails({ task }: { task: Task }) {
   const requester = peerLabel(task.requester, task.requester_email)
   const assignee = peerLabel(task.assignee, task.assignee_email)
@@ -104,7 +94,7 @@ function TaskDetails({ task }: { task: Task }) {
     : 'Pending'
 
   return (
-    <div className="mt-3 space-y-1.5 border-t border-slate-800 pt-3 text-xs">
+    <div className="mt-2 grid grid-cols-1 gap-x-6 gap-y-1 border-t border-slate-800 pt-2 sm:grid-cols-2">
       <DetailRow label="Status" value={status} />
       <DetailRow
         label="Requester"
@@ -187,81 +177,64 @@ function TaskCard({
   const [expanded, setExpanded] = useState(false)
 
   return (
-    <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
+    <div>
+      {/* Collapsed row: everything needed for triage on one slim line. */}
       <button
         type="button"
         onClick={() => setExpanded(e => !e)}
         aria-expanded={expanded}
-        className="w-full text-left"
+        className="flex w-full flex-wrap items-center gap-x-2 gap-y-0.5 px-3 py-1.5 text-left transition hover:bg-slate-800/40"
       >
-        <div className="flex items-start justify-between gap-2">
-          <p className="min-w-0 font-medium text-slate-100">
-            {task.name || `Task #${task.id}`}
-          </p>
-          <div className="flex shrink-0 items-center gap-1.5">
-            {inProgress && (
-              <span className="rounded bg-indigo-500/15 px-1.5 py-0.5 text-[11px] font-medium text-indigo-300">
-                In progress
-              </span>
-            )}
-            {due && (
-              <span className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${due.cls}`}>
-                {due.label}
-              </span>
-            )}
-            <span
-              className={`text-slate-500 transition-transform ${expanded ? 'rotate-180' : ''}`}
-              aria-hidden
-            >
-              ▾
-            </span>
-          </div>
-        </div>
-
-        {task.description && (
-          <p
-            className={`mt-1 text-xs text-slate-400 ${expanded ? 'whitespace-pre-wrap' : 'line-clamp-2'}`}
-          >
-            {task.description}
-          </p>
-        )}
-
-        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
-          <span>
-            {tab === 'sent' ? 'To ' : 'From '}
-            <span className="text-slate-300">{peer}</span>
+        <span
+          className={`text-xs text-slate-500 transition-transform ${expanded ? 'rotate-90' : ''}`}
+          aria-hidden
+        >
+          ▸
+        </span>
+        <span className="min-w-0 flex-1 truncate text-sm font-medium text-slate-100">
+          {task.name || `Task #${task.id}`}
+        </span>
+        {inProgress && (
+          <span className="rounded bg-indigo-500/15 px-1.5 py-0.5 text-[11px] font-medium text-indigo-300">
+            In progress
           </span>
-          {task.due_date && (
-            <span>
-              Due <span className="text-slate-300">{formatDate(task.due_date)}</span>
-            </span>
-          )}
-          {task.points != null && <span>{task.points} pts</span>}
-          {task.price != null && (
-            <span className="text-emerald-400">${task.price}</span>
-          )}
-        </div>
-
+        )}
+        {due && (
+          <span className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${due.cls}`}>
+            {due.label}
+          </span>
+        )}
+        <span className="text-xs text-slate-500">
+          {tab === 'sent' ? '→ ' : '← '}
+          <span className="text-slate-300">{peer}</span>
+        </span>
+        {task.due_date && (
+          <span className="hidden text-xs text-slate-500 md:inline">
+            {formatDate(task.due_date)}
+          </span>
+        )}
         {stats.total > 0 && (
-          <div className="mt-3">
-            <div className="mb-1 flex justify-between text-[11px] text-slate-500">
-              <span>Subtasks</span>
-              <span>
-                {stats.done}/{stats.total}
-              </span>
-            </div>
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
-              <div
-                className="h-full rounded-full bg-emerald-500 transition-all"
+          <span className="hidden items-center gap-1.5 sm:flex">
+            <span className="text-[11px] tabular-nums text-slate-500">
+              {stats.done}/{stats.total}
+            </span>
+            <span className="h-1 w-10 overflow-hidden rounded-full bg-slate-800">
+              <span
+                className="block h-full rounded-full bg-emerald-500 transition-all"
                 style={{ width: `${stats.pct}%` }}
               />
-            </div>
-          </div>
+            </span>
+          </span>
         )}
       </button>
 
       {expanded && (
-        <>
+        <div className="px-3 pb-2.5 pl-7">
+          {task.description && (
+            <p className="mb-2 whitespace-pre-wrap text-xs text-slate-400">
+              {task.description}
+            </p>
+          )}
           <TaskDetails task={task} />
           {stats.total > 0 && (
             <SubtaskList
@@ -271,63 +244,65 @@ function TaskCard({
               busy={subtaskBusy}
             />
           )}
-        </>
-      )}
 
-      {showActions && (
-        <>
-          <div className="mt-3 flex gap-2">
-            {!task.initiated_at && (
-              <Button
-                className="flex-1 bg-slate-700 hover:bg-slate-600"
-                onClick={onStart}
-                disabled={!!pending}
-              >
-                {pending === 'start' ? 'Starting…' : 'Start'}
-              </Button>
-            )}
-            <Button
-              className="flex-1 bg-emerald-600 hover:bg-emerald-500"
-              onClick={onDone}
-              disabled={!!pending || !stats.allDone}
-              title={
-                stats.allDone ? undefined : 'Complete all subtasks to finish this task'
-              }
-            >
-              {pending === 'done' ? 'Finishing…' : 'Done'}
-            </Button>
-          </div>
-          {!stats.allDone && (
-            <p className="mt-2 text-[11px] text-slate-500">
-              {stats.done}/{stats.total} subtasks done — finish them all to complete
-              this task.
-            </p>
+          {showActions && (
+            <>
+              <div className="mt-2 flex gap-2">
+                {!task.initiated_at && (
+                  <Button
+                    className="min-w-24 bg-slate-700 hover:bg-slate-600"
+                    onClick={onStart}
+                    disabled={!!pending}
+                  >
+                    {pending === 'start' ? 'Starting…' : 'Start'}
+                  </Button>
+                )}
+                <Button
+                  className="min-w-24 bg-emerald-600 hover:bg-emerald-500"
+                  onClick={onDone}
+                  disabled={!!pending || !stats.allDone}
+                  title={
+                    stats.allDone
+                      ? undefined
+                      : 'Complete all subtasks to finish this task'
+                  }
+                >
+                  {pending === 'done' ? 'Finishing…' : 'Done'}
+                </Button>
+              </div>
+              {!stats.allDone && (
+                <p className="mt-1.5 text-[11px] text-slate-500">
+                  {stats.done}/{stats.total} subtasks done — finish them all to
+                  complete this task.
+                </p>
+              )}
+              {doneError && (
+                <p className="mt-1.5 text-[11px] text-rose-400">{doneError}</p>
+              )}
+            </>
           )}
-          {doneError && (
-            <p className="mt-2 text-[11px] text-rose-400">{doneError}</p>
-          )}
-        </>
-      )}
 
-      {/* The requester can edit or delete a task they sent until the assignee starts it. */}
-      {(onEdit || onDelete) && notStarted && (
-        <div className="mt-3 flex gap-2">
-          {onEdit && (
-            <button
-              className="flex-1 inline-flex items-center justify-center rounded-md border border-slate-600 bg-slate-800 px-3 py-1.5 text-sm font-medium text-slate-200 transition hover:bg-slate-700"
-              onClick={onEdit}
-            >
-              Edit
-            </button>
-          )}
-          {onDelete && (
-            <button
-              className="flex-1 inline-flex items-center justify-center rounded-md border border-rose-500/40 bg-rose-500/10 px-3 py-1.5 text-sm font-medium text-rose-300 transition hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:opacity-50"
-              onClick={onDelete}
-              disabled={deleting}
-            >
-              {deleting ? 'Deleting…' : 'Delete'}
-            </button>
+          {/* The requester can edit or delete a task they sent until the assignee starts it. */}
+          {(onEdit || onDelete) && notStarted && (
+            <div className="mt-2 flex gap-2">
+              {onEdit && (
+                <button
+                  className="inline-flex min-w-24 items-center justify-center rounded-md border border-slate-600 bg-slate-800 px-2.5 py-1 text-sm font-medium text-slate-200 transition hover:bg-slate-700"
+                  onClick={onEdit}
+                >
+                  Edit
+                </button>
+              )}
+              {onDelete && (
+                <button
+                  className="inline-flex min-w-24 items-center justify-center rounded-md border border-rose-500/40 bg-rose-500/10 px-2.5 py-1 text-sm font-medium text-rose-300 transition hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                  onClick={onDelete}
+                  disabled={deleting}
+                >
+                  {deleting ? 'Deleting…' : 'Delete'}
+                </button>
+              )}
+            </div>
           )}
         </div>
       )}
@@ -337,12 +312,9 @@ function TaskCard({
 
 function Skeleton() {
   return (
-    <div className="animate-pulse space-y-3">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <div
-          key={i}
-          className="h-24 rounded-lg border border-slate-800 bg-slate-900/60"
-        />
+    <div className="animate-pulse divide-y divide-slate-800 rounded-lg border border-slate-800 bg-slate-900/40">
+      {Array.from({ length: 10 }).map((_, i) => (
+        <div key={i} className="h-9" />
       ))}
     </div>
   )
@@ -478,9 +450,9 @@ export function Tasks() {
   const [dueDate, setDueDate] = useState('')
   const [subtasks, setSubtasks] = useState<string[]>([])
   // When set, the form edits this already-sent (not yet accepted) task instead of
-  // creating a new one. The "Send a task" card doubles as the edit form.
+  // creating a new one. The "Send a task" modal doubles as the edit form.
   const [editingId, setEditingId] = useState<number | null>(null)
-  const formRef = useRef<HTMLDivElement>(null)
+  const [formOpen, setFormOpen] = useState(false)
 
   // Per-task action state so only the clicked card shows a spinner.
   const [pending, setPending] = useState<{ id: number; action: 'start' | 'done' } | null>(
@@ -611,6 +583,7 @@ export function Tasks() {
       setSubtasks([])
       setAssigneeQuery('')
       setAssigneeEmail('')
+      setFormOpen(false)
       qc.invalidateQueries({ queryKey: ['tasks'] })
     },
   })
@@ -625,6 +598,11 @@ export function Tasks() {
     setAssigneeEmail('')
     setStartDate('')
     setDueDate('')
+  }
+
+  function closeForm() {
+    setFormOpen(false)
+    resetForm()
   }
 
   // Edit = save changes to an already-sent task. The update endpoint only touches
@@ -649,11 +627,12 @@ export function Tasks() {
     },
     onSuccess: () => {
       resetForm()
+      setFormOpen(false)
       qc.invalidateQueries({ queryKey: ['tasks'] })
     },
   })
 
-  // Load a sent task into the form for editing and scroll the form into view.
+  // Load a sent task into the form and open the modal in edit mode.
   function startEdit(task: Task) {
     setEditingId(task.id)
     setName(task.name ?? '')
@@ -665,29 +644,21 @@ export function Tasks() {
     setDueDate(task.due_date ? toLocalInput(new Date(task.due_date)) : '')
     createTask.reset()
     updateTask.reset()
-    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    setFormOpen(true)
   }
 
   const tasks = tasksQuery.data ?? []
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-      <div>
-        <div className="mb-3 flex items-end justify-between">
-          <h2 className="text-xl font-bold text-white">Tasks</h2>
-          {tasksQuery.data && (
-            <span className="text-xs text-slate-500">
-              {tasks.length} open
-            </span>
-          )}
-        </div>
-
-        <div className="mb-4 flex gap-2">
+    <div className="max-w-4xl">
+      <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+        <h2 className="text-lg font-bold text-white">Tasks</h2>
+        <div className="flex gap-1.5">
           {(['sent', 'received'] as const).map(t => (
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`rounded-full px-4 py-1 text-sm capitalize transition ${
+              className={`rounded-full px-3 py-0.5 text-xs capitalize transition ${
                 t === tab
                   ? 'bg-indigo-600 text-white'
                   : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
@@ -697,60 +668,61 @@ export function Tasks() {
             </button>
           ))}
         </div>
-
-        {tasksQuery.isLoading && <Skeleton />}
-        {tasksQuery.error && (
-          <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-300">
-            Failed to load tasks. Make sure the server is running.
-          </div>
-        )}
-
         {tasksQuery.data && (
-          <div className="space-y-3">
-            {tasks.map(t => (
-              <TaskCard
-                key={t.id}
-                task={t}
-                tab={tab}
-                onStart={() => startTask.mutate(t)}
-                onDone={() => doneTask.mutate(t)}
-                onEdit={tab === 'sent' ? () => startEdit(t) : undefined}
-                onDelete={tab === 'sent' ? () => deleteTask.mutate(t) : undefined}
-                onToggleSubtask={index => toggleSubtask.mutate({ task: t, index })}
-                pending={pending?.id === t.id ? pending.action : null}
-                subtaskBusy={togglingId === t.id}
-                deleting={deletingId === t.id}
-                doneError={doneError?.id === t.id ? doneError.message : null}
-              />
-            ))}
-          </div>
+          <span className="text-xs text-slate-500">{tasks.length} open</span>
         )}
-
-        {tasksQuery.data && tasks.length === 0 && (
-          <div className="rounded-lg border border-dashed border-slate-800 p-8 text-center text-sm text-slate-400">
-            {tab === 'sent'
-              ? 'You have no open tasks. Send one using the form →'
-              : 'Nothing on your plate — no open tasks assigned to you.'}
-          </div>
-        )}
+        <Button
+          className="ml-auto"
+          onClick={() => {
+            createTask.reset()
+            updateTask.reset()
+            setFormOpen(true)
+          }}
+        >
+          + New task
+        </Button>
       </div>
 
-      <div ref={formRef}>
-      <Card
-        title={
-          <div className="flex items-center justify-between">
-            <span>{editingId ? 'Edit task' : 'Send a task'}</span>
-            {editingId && (
-              <button
-                type="button"
-                onClick={resetForm}
-                className="text-xs font-medium text-slate-400 hover:text-slate-200"
-              >
-                Cancel
-              </button>
-            )}
-          </div>
-        }
+      {tasksQuery.isLoading && <Skeleton />}
+      {tasksQuery.error && (
+        <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-300">
+          Failed to load tasks. Make sure the server is running.
+        </div>
+      )}
+
+      {tasksQuery.data && tasks.length > 0 && (
+        <div className="divide-y divide-slate-800 rounded-lg border border-slate-800 bg-slate-900/40">
+          {tasks.map(t => (
+            <TaskCard
+              key={t.id}
+              task={t}
+              tab={tab}
+              onStart={() => startTask.mutate(t)}
+              onDone={() => doneTask.mutate(t)}
+              onEdit={tab === 'sent' ? () => startEdit(t) : undefined}
+              onDelete={tab === 'sent' ? () => deleteTask.mutate(t) : undefined}
+              onToggleSubtask={index => toggleSubtask.mutate({ task: t, index })}
+              pending={pending?.id === t.id ? pending.action : null}
+              subtaskBusy={togglingId === t.id}
+              deleting={deletingId === t.id}
+              doneError={doneError?.id === t.id ? doneError.message : null}
+            />
+          ))}
+        </div>
+      )}
+
+      {tasksQuery.data && tasks.length === 0 && (
+        <div className="rounded-lg border border-dashed border-slate-800 p-8 text-center text-sm text-slate-400">
+          {tab === 'sent'
+            ? 'You have no open tasks. Send one with + New task.'
+            : 'Nothing on your plate — no open tasks assigned to you.'}
+        </div>
+      )}
+
+      <Modal
+        open={formOpen}
+        title={editingId ? 'Edit task' : 'Send a task'}
+        onClose={closeForm}
       >
         <div className="flex flex-col gap-3">
           <Field label="assignee (name or email)">
@@ -848,9 +820,6 @@ export function Tasks() {
               {createTask.isPending ? 'Sending…' : 'Send task'}
             </Button>
           )}
-          {!editingId && createTask.isSuccess && (
-            <p className="text-xs text-emerald-400">Task sent ✓</p>
-          )}
           {!editingId && createTask.error && (
             <p className="text-xs text-rose-400">
               {(createTask.error as Error).message}
@@ -862,8 +831,7 @@ export function Tasks() {
             </p>
           )}
         </div>
-      </Card>
-      </div>
+      </Modal>
     </div>
   )
 }

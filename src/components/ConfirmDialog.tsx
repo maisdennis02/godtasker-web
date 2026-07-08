@@ -28,7 +28,8 @@ export function ConfirmDialog({
   if (!open) return null
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      // z-[60]: must paint above Modal (z-50) when a confirm opens over a form.
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4"
       onClick={() => !pending && onCancel()}
       role="presentation"
     >

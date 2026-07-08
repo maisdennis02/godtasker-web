@@ -39,7 +39,8 @@ export function Chat() {
   }, [data, me, selected, blockedEmails])
 
   return (
-    <div className="grid h-[calc(100vh-3rem)] grid-cols-[260px_1fr] gap-4">
+    // 2rem = the main area's p-4 top+bottom padding.
+    <div className="grid h-[calc(100vh-2rem)] grid-cols-[260px_1fr] gap-4">
       <div className="flex flex-col rounded-lg border border-slate-800 bg-slate-900/60">
         <div className="border-b border-slate-800 p-3">
           <p className="mb-2 text-sm font-semibold text-slate-200">
@@ -68,7 +69,7 @@ export function Chat() {
             <button
               key={email}
               onClick={() => setSelected(email)}
-              className={`mb-1 block w-full truncate rounded-md px-3 py-2 text-left text-sm transition ${
+              className={`mb-1 block w-full truncate rounded-md px-2.5 py-1.5 text-left text-sm transition ${
                 selected === email
                   ? 'bg-indigo-600 text-white'
                   : 'text-slate-300 hover:bg-slate-800'

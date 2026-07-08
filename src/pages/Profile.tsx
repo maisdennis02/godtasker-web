@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../lib/api'
 import { useAuth } from '../auth/AuthContext'
-import { Button, Card, Field, Input, Textarea } from '../components/ui'
+import { Button, Card, Field, Input, Select, Textarea } from '../components/ui'
 import type { User } from '../types'
 
 const GENDERS = ['', 'female', 'male', 'non-binary', 'other', 'prefer not to say']
@@ -59,10 +59,6 @@ function initials(name: string): string {
   const parts = name.split(/\s+/).filter(Boolean)
   if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
   return name.slice(0, 2).toUpperCase()
-}
-
-function styledSelectClass() {
-  return 'w-full rounded-md border border-slate-700 bg-slate-900 px-2.5 py-1.5 text-sm text-slate-100 outline-none focus:border-indigo-500'
 }
 
 export function Profile() {
@@ -143,10 +139,10 @@ export function Profile() {
   const avatarUrl = data?.avatar?.url
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <div className="mb-4">
-        <h2 className="text-xl font-bold text-white">Profile</h2>
-        <p className="mt-1 text-sm text-slate-400">
+    <div className="mx-auto max-w-4xl">
+      <div className="mb-3">
+        <h2 className="text-lg font-bold text-white">Profile</h2>
+        <p className="text-xs text-slate-400">
           Update your details and profile photo.
         </p>
       </div>
@@ -162,7 +158,7 @@ export function Profile() {
       )}
 
       {data && (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {/* Photo */}
           <Card>
             <div className="flex items-center gap-4">
@@ -216,9 +212,9 @@ export function Profile() {
                 e.preventDefault()
                 saveProfile.mutate()
               }}
-              className="space-y-4"
+              className="space-y-3"
             >
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 <Field label="First name">
                   <Input value={form.first_name} onChange={set('first_name')} />
                 </Field>
@@ -246,17 +242,13 @@ export function Profile() {
                   />
                 </Field>
                 <Field label="Gender">
-                  <select
-                    value={form.gender}
-                    onChange={set('gender')}
-                    className={styledSelectClass()}
-                  >
+                  <Select value={form.gender} onChange={set('gender')}>
                     {GENDERS.map(g => (
                       <option key={g} value={g}>
                         {g === '' ? '—' : g}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </Field>
                 <Field label="Occupation">
                   <Input value={form.occupation} onChange={set('occupation')} />
