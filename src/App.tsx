@@ -22,6 +22,9 @@ const ApiConsole = lazy(() =>
 )
 const Privacy = lazy(() => import('./pages/Privacy').then(m => ({ default: m.Privacy })))
 const Terms = lazy(() => import('./pages/Terms').then(m => ({ default: m.Terms })))
+const DeleteAccount = lazy(() =>
+  import('./pages/DeleteAccount').then(m => ({ default: m.DeleteAccount }))
+)
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { user } = useAuth()
@@ -46,6 +49,8 @@ export default function App() {
         {/* Public legal pages — reachable with or without an account (stores link to them). */}
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
+        {/* Public account-deletion page — Google Play requires this URL in the listing. */}
+        <Route path="/delete-account" element={<DeleteAccount />} />
         {/* Public landing at / for visitors; logged-in users get the Dashboard. */}
         {!user && <Route path="/" element={<Landing />} />}
         <Route

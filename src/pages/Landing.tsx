@@ -479,6 +479,9 @@ export function Landing() {
             <Link to="/terms" className="text-xs text-slate-400 hover:text-white">
               {t('footerTerms')}
             </Link>
+            <Link to="/delete-account" className="text-xs text-slate-400 hover:text-white">
+              {t('footerDeleteAccount')}
+            </Link>
             <LangToggle locale={locale} setLocale={setLocale} />
           </div>
         </div>
