@@ -472,7 +472,12 @@ export function Landing() {
           <p className="text-xs text-slate-500">
             © 2026 GodTasker — {t('footerTagline')}
           </p>
-          <LangToggle locale={locale} setLocale={setLocale} />
+          <div className="flex items-center gap-4">
+            <Link to="/privacy" className="text-xs text-slate-400 hover:text-white">
+              {t('footerPrivacy')}
+            </Link>
+            <LangToggle locale={locale} setLocale={setLocale} />
+          </div>
         </div>
       </footer>
     </div>
