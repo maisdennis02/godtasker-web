@@ -476,6 +476,9 @@ export function Landing() {
             <Link to="/privacy" className="text-xs text-slate-400 hover:text-white">
               {t('footerPrivacy')}
             </Link>
+            <Link to="/terms" className="text-xs text-slate-400 hover:text-white">
+              {t('footerTerms')}
+            </Link>
             <LangToggle locale={locale} setLocale={setLocale} />
           </div>
         </div>

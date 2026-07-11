@@ -90,6 +90,7 @@ const en = {
   // footer
   footerTagline: 'making you powerful',
   footerPrivacy: 'Privacy',
+  footerTerms: 'Terms',
 }
 
 // Record<keyof typeof en, string> makes tsc reject missing or extra keys.
@@ -171,6 +172,7 @@ const pt: Record<keyof typeof en, string> = {
 
   footerTagline: 'te deixando poderoso(a)',
   footerPrivacy: 'Privacidade',
+  footerTerms: 'Termos',
 }
 
 export type MessageKey = keyof typeof en

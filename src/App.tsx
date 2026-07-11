@@ -21,6 +21,7 @@ const ApiConsole = lazy(() =>
   import('./pages/ApiConsole').then(m => ({ default: m.ApiConsole }))
 )
 const Privacy = lazy(() => import('./pages/Privacy').then(m => ({ default: m.Privacy })))
+const Terms = lazy(() => import('./pages/Terms').then(m => ({ default: m.Terms })))
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { user } = useAuth()
@@ -42,8 +43,9 @@ export default function App() {
     <Suspense fallback={<PageFallback />}>
       <Routes>
         <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
-        {/* Public legal page — reachable with or without an account (stores link to it). */}
+        {/* Public legal pages — reachable with or without an account (stores link to them). */}
         <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
         {/* Public landing at / for visitors; logged-in users get the Dashboard. */}
         {!user && <Route path="/" element={<Landing />} />}
         <Route
