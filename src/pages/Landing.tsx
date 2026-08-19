@@ -90,7 +90,7 @@ function Wordmark() {
   return (
     <span className="flex items-center gap-2">
       <img src={detectiveUrl} alt="" className="h-7 w-7" />
-      <span className="text-lg font-bold tracking-tight text-white">GodTasker</span>
+      <span className="text-lg font-bold tracking-tight text-white">LalaTask</span>
     </span>
   )
 }
@@ -470,7 +470,7 @@ export function Landing() {
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-8 sm:flex-row sm:px-6">
           <Wordmark />
           <p className="text-xs text-slate-500">
-            © 2026 GodTasker — {t('footerTagline')}
+            © 2026 LalaTask — {t('footerTagline')}
           </p>
           <div className="flex items-center gap-4">
             <Link to="/privacy" className="text-xs text-slate-400 hover:text-white">

@@ -68,7 +68,7 @@ const en = {
 
   // use cases
   useCasesTitle: 'For the bold and organized',
-  useCasesSubtitle: 'Six ways people use GodTasker.',
+  useCasesSubtitle: 'Six ways people use LalaTask.',
   sectorHouseholdTitle: 'Household & errands',
   sectorHouseholdBody:
     'Send the grocery run as a checklist — and watch items get ticked off in real time.',
@@ -84,7 +84,7 @@ const en = {
   sectorFitnessBody: 'Weekly plans as checklists, points for consistency, chat for form checks.',
 
   // CTA band
-  ctaTitle: 'See if GodTasker is right for you… it definitely is.',
+  ctaTitle: 'See if LalaTask is right for you… it definitely is.',
   ctaButton: 'Get started today!',
 
   // footer
@@ -151,7 +151,7 @@ const pt: Record<keyof typeof en, string> = {
     'Uma bio pública com seu Instagram e LinkedIn. Seja seguido, seja encontrado, receba tarefas.',
 
   useCasesTitle: 'Para os corajosos e organizados',
-  useCasesSubtitle: 'Seis formas de usar o GodTasker.',
+  useCasesSubtitle: 'Seis formas de usar o LalaTask.',
   sectorHouseholdTitle: 'Casa & tarefas do dia a dia',
   sectorHouseholdBody:
     'Envie as compras como um checklist — e veja os itens sendo marcados em tempo real.',
@@ -168,7 +168,7 @@ const pt: Record<keyof typeof en, string> = {
   sectorFitnessBody:
     'Planos semanais em checklist, pontos pela constância e chat para tirar dúvidas.',
 
-  ctaTitle: 'Veja se o GodTasker é para você… com certeza é.',
+  ctaTitle: 'Veja se o LalaTask é para você… com certeza é.',
   ctaButton: 'Comece hoje mesmo!',
 
   footerTagline: 'te deixando poderoso(a)',

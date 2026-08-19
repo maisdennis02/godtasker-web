@@ -35,7 +35,7 @@ const CONTENT: Record<Locale, Copy> = {
   en: {
     title: 'Delete your account',
     intro: [
-      'You can permanently delete your GodTasker account here, or from inside the app (Profile → Delete account). Both do exactly the same thing.',
+      'You can permanently delete your LalaTask account here, or from inside the app (Profile → Delete account). Both do exactly the same thing.',
     ],
     whatTitle: 'What gets deleted',
     what: [
@@ -45,7 +45,7 @@ const CONTENT: Record<Locale, Copy> = {
       'Deletion is immediate and cannot be undone. Tasks you exchanged with other people may remain visible to them, without your account attached.',
     ],
     inAppTitle: 'Delete from the app',
-    inApp: 'Open GodTasker → Profile tab → Delete account, and confirm.',
+    inApp: 'Open LalaTask → Profile tab → Delete account, and confirm.',
     formTitle: 'Delete from this page',
     email: 'Email',
     password: 'Password',
@@ -54,7 +54,7 @@ const CONTENT: Record<Locale, Copy> = {
     confirmPrompt:
       'This permanently deletes your account, conversations, and follow connections. This cannot be undone. Continue?',
     doneTitle: 'Account deleted',
-    done: 'Your account and associated data have been deleted. Thank you for trying GodTasker.',
+    done: 'Your account and associated data have been deleted. Thank you for trying LalaTask.',
     failed: 'Something went wrong. Please try again.',
     badCredentials: 'Email or password is incorrect.',
     back: 'Back to home',
@@ -62,7 +62,7 @@ const CONTENT: Record<Locale, Copy> = {
   pt: {
     title: 'Excluir sua conta',
     intro: [
-      'Você pode excluir sua conta do GodTasker permanentemente aqui, ou pelo aplicativo (Perfil → Excluir conta). As duas opções fazem exatamente a mesma coisa.',
+      'Você pode excluir sua conta do LalaTask permanentemente aqui, ou pelo aplicativo (Perfil → Excluir conta). As duas opções fazem exatamente a mesma coisa.',
     ],
     whatTitle: 'O que é excluído',
     what: [
@@ -72,7 +72,7 @@ const CONTENT: Record<Locale, Copy> = {
       'A exclusão é imediata e não pode ser desfeita. Tarefas trocadas com outras pessoas podem continuar visíveis para elas, sem a sua conta vinculada.',
     ],
     inAppTitle: 'Excluir pelo aplicativo',
-    inApp: 'Abra o GodTasker → aba Perfil → Excluir conta, e confirme.',
+    inApp: 'Abra o LalaTask → aba Perfil → Excluir conta, e confirme.',
     formTitle: 'Excluir por esta página',
     email: 'E-mail',
     password: 'Senha',
@@ -81,7 +81,7 @@ const CONTENT: Record<Locale, Copy> = {
     confirmPrompt:
       'Isso exclui permanentemente sua conta, conversas e conexões de seguir. Não pode ser desfeito. Continuar?',
     doneTitle: 'Conta excluída',
-    done: 'Sua conta e os dados associados foram excluídos. Obrigado por experimentar o GodTasker.',
+    done: 'Sua conta e os dados associados foram excluídos. Obrigado por experimentar o LalaTask.',
     failed: 'Algo deu errado. Tente novamente.',
     badCredentials: 'E-mail ou senha incorretos.',
     back: 'Voltar ao início',
@@ -101,7 +101,7 @@ export function DeleteAccount() {
   useEffect(() => {
     const prevTitle = document.title
     const prevLang = document.documentElement.lang
-    document.title = `${c.title} · GodTasker`
+    document.title = `${c.title} · LalaTask`
     document.documentElement.lang = locale === 'pt' ? 'pt-BR' : 'en'
     return () => {
       document.title = prevTitle
@@ -139,7 +139,7 @@ export function DeleteAccount() {
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <Link to="/" className="flex items-center gap-2">
             <img src={detectiveUrl} alt="" className="h-7 w-7" />
-            <span className="text-lg font-bold tracking-tight text-white">GodTasker</span>
+            <span className="text-lg font-bold tracking-tight text-white">LalaTask</span>
           </Link>
           <div className="flex overflow-hidden rounded-full border border-slate-700 text-xs font-semibold">
             {(['en', 'pt'] as const).map(l => (

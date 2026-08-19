@@ -1,4 +1,4 @@
-// Descriptor catalog of every GodTasker REST endpoint (from server src/routes.js).
+// Descriptor catalog of every LalaTask REST endpoint (from server src/routes.js).
 // The ApiConsole renders one EndpointCard per spec, guaranteeing full coverage.
 // `default` supports the tokens {email} and {id} (filled from the logged-in user).
 

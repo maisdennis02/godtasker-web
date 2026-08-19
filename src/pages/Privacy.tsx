@@ -13,7 +13,7 @@ import type { Locale } from '../i18n/landing'
 // reviewers may write to it) and fill in the controller/company name if you
 // operate as a registered entity. This is a plain-language template, not legal
 // advice — have it reviewed if you handle EU/BR users at scale.
-const CONTACT_EMAIL = 'support@godtasker.app'
+const CONTACT_EMAIL = 'support@lalatask.com'
 const LAST_UPDATED = '2026-07-11'
 
 type Section = { h: string; p: string[] }
@@ -30,7 +30,7 @@ const CONTENT: Record<Locale, Copy> = {
     title: 'Privacy Policy',
     updated: `Last updated: ${LAST_UPDATED}`,
     intro: [
-      'GodTasker ("GodTasker", "we", "us") lets you create tasks and send them to other people, chat about them in real time, publish service offerings, and follow other users. This policy explains what we collect, why, and the choices you have.',
+      'LalaTask ("LalaTask", "we", "us") lets you create tasks and send them to other people, chat about them in real time, publish service offerings, and follow other users. This policy explains what we collect, why, and the choices you have.',
       'By creating an account or using the app or website, you agree to this policy.',
     ],
     sections: [
@@ -88,7 +88,7 @@ const CONTENT: Record<Locale, Copy> = {
       {
         h: '8. Children',
         p: [
-          'GodTasker is not directed to children under 13, and we do not knowingly collect information from them. If you believe a child has given us personal information, contact us and we will delete it.',
+          'LalaTask is not directed to children under 13, and we do not knowingly collect information from them. If you believe a child has given us personal information, contact us and we will delete it.',
         ],
       },
       {
@@ -116,7 +116,7 @@ const CONTENT: Record<Locale, Copy> = {
     title: 'Política de Privacidade',
     updated: `Última atualização: ${LAST_UPDATED}`,
     intro: [
-      'O GodTasker ("GodTasker", "nós") permite criar tarefas e enviá-las a outras pessoas, conversar em tempo real, publicar ofertas de serviços e seguir outros usuários. Esta política explica o que coletamos, por quê e quais são as suas escolhas.',
+      'O LalaTask ("LalaTask", "nós") permite criar tarefas e enviá-las a outras pessoas, conversar em tempo real, publicar ofertas de serviços e seguir outros usuários. Esta política explica o que coletamos, por quê e quais são as suas escolhas.',
       'Ao criar uma conta ou usar o aplicativo ou o site, você concorda com esta política.',
     ],
     sections: [
@@ -174,7 +174,7 @@ const CONTENT: Record<Locale, Copy> = {
       {
         h: '8. Crianças',
         p: [
-          'O GodTasker não se destina a menores de 13 anos e não coletamos intencionalmente informações deles. Se você acredita que uma criança nos forneceu dados pessoais, entre em contato e os excluiremos.',
+          'O LalaTask não se destina a menores de 13 anos e não coletamos intencionalmente informações deles. Se você acredita que uma criança nos forneceu dados pessoais, entre em contato e os excluiremos.',
         ],
       },
       {
@@ -207,7 +207,7 @@ export function Privacy() {
   useEffect(() => {
     const prevTitle = document.title
     const prevLang = document.documentElement.lang
-    document.title = `${c.title} · GodTasker`
+    document.title = `${c.title} · LalaTask`
     document.documentElement.lang = locale === 'pt' ? 'pt-BR' : 'en'
     return () => {
       document.title = prevTitle
@@ -221,7 +221,7 @@ export function Privacy() {
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <Link to="/" className="flex items-center gap-2">
             <img src={detectiveUrl} alt="" className="h-7 w-7" />
-            <span className="text-lg font-bold tracking-tight text-white">GodTasker</span>
+            <span className="text-lg font-bold tracking-tight text-white">LalaTask</span>
           </Link>
           <div className="flex overflow-hidden rounded-full border border-slate-700 text-xs font-semibold">
             {(['en', 'pt'] as const).map(l => (

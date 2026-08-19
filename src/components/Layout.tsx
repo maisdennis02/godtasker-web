@@ -25,7 +25,7 @@ export function Layout() {
     <div className="flex h-full">
       <aside className="flex w-48 shrink-0 flex-col border-r border-slate-800 bg-slate-900/80 p-3">
         <div className="mb-4">
-          <h1 className="text-lg font-bold text-white">GodTasker</h1>
+          <h1 className="text-lg font-bold text-white">LalaTask</h1>
           <p className="text-xs text-slate-500">web client</p>
         </div>
         <nav className="flex flex-col gap-1">
