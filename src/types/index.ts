@@ -106,6 +106,8 @@ export interface AuthUser {
   bio?: string | null
   subscriber?: boolean
   avatar?: FileRef | null
+  // false for accounts created via Google that never set a password
+  has_password?: boolean
 }
 
 export interface SessionResponse {

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import detectiveUrl from '../assets/detective.svg'
 import { api } from '../lib/api'
+import { PasswordInput } from '../components/ui'
+import { GoogleSignInButton, googleSignInEnabled } from '../components/GoogleSignInButton'
 import { useLandingLocale } from '../i18n/landing'
 import type { Locale } from '../i18n/landing'
 
@@ -28,6 +30,7 @@ type Copy = {
   done: string
   failed: string
   badCredentials: string
+  orGoogle: string
   back: string
 }
 
@@ -57,6 +60,7 @@ const CONTENT: Record<Locale, Copy> = {
     done: 'Your account and associated data have been deleted. Thank you for trying LalaTask.',
     failed: 'Something went wrong. Please try again.',
     badCredentials: 'Email or password is incorrect.',
+    orGoogle: 'or, if you signed up with Google',
     back: 'Back to home',
   },
   pt: {
@@ -84,6 +88,7 @@ const CONTENT: Record<Locale, Copy> = {
     done: 'Sua conta e os dados associados foram excluídos. Obrigado por experimentar o LalaTask.',
     failed: 'Algo deu errado. Tente novamente.',
     badCredentials: 'E-mail ou senha incorretos.',
+    orGoogle: 'ou, se você se cadastrou com o Google',
     back: 'Voltar ao início',
   },
 }
@@ -109,18 +114,14 @@ export function DeleteAccount() {
     }
   }, [c.title, locale])
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault()
+  // Authenticate outside the app's AuthContext so this page never creates a
+  // persisted session, then call the owner-only delete with that one-off token.
+  async function deleteWith(session: () => Promise<{ user: { id: number }; token: string }>) {
     setError(null)
     if (!window.confirm(c.confirmPrompt)) return
     setLoading(true)
     try {
-      // Authenticate outside the app's AuthContext so this page never
-      // creates a persisted session.
-      const { data } = await api.post<{ user: { id: number }; token: string }>('/sessions', {
-        email: email.trim(),
-        password,
-      })
+      const data = await session()
       await api.delete(`/users/${data.user.id}`, {
         headers: { Authorization: `Bearer ${data.token}` },
       })
@@ -131,6 +132,28 @@ export function DeleteAccount() {
     } finally {
       setLoading(false)
     }
+  }
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault()
+    await deleteWith(async () => {
+      const { data } = await api.post<{ user: { id: number }; token: string }>('/sessions', {
+        email: email.trim(),
+        password,
+      })
+      return data
+    })
+  }
+
+  // Accounts created with Google have no password — let them delete with Google too.
+  async function submitGoogle(idToken: string) {
+    await deleteWith(async () => {
+      const { data } = await api.post<{ user: { id: number }; token: string }>(
+        '/sessions/google',
+        { idToken }
+      )
+      return data
+    })
   }
 
   return (
@@ -206,13 +229,13 @@ export function DeleteAccount() {
               </label>
               <label className="block">
                 <span className="text-sm text-slate-400">{c.password}</span>
-                <input
-                  type="password"
+                <PasswordInput
                   required
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   autoComplete="current-password"
-                  className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-indigo-500"
+                  wrapperClassName="mt-1"
+                  inputClassName="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-indigo-500"
                 />
               </label>
 
@@ -225,6 +248,17 @@ export function DeleteAccount() {
               >
                 {loading ? c.deleting : c.submit}
               </button>
+
+              {googleSignInEnabled && (
+                <div className="space-y-2 pt-2">
+                  <p className="text-sm text-slate-400">{c.orGoogle}</p>
+                  <GoogleSignInButton
+                    text="continue_with"
+                    onCredential={submitGoogle}
+                    onError={() => setError(c.failed)}
+                  />
+                </div>
+              )}
             </form>
           )}
         </section>

@@ -6,6 +6,7 @@ import type { AuthUser, SessionResponse } from '../types'
 interface AuthState {
   user: AuthUser | null
   login: (email: string, password: string) => Promise<void>
+  loginWithGoogle: (idToken: string) => Promise<void>
   register: (data: RegisterInput) => Promise<void>
   updateUser: (partial: Partial<AuthUser>) => void
   logout: () => void
@@ -41,6 +42,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(data.user)
   }
 
+  // `idToken` comes from Google Identity Services (see GoogleSignInButton);
+  // the server verifies it and creates/links the account.
+  async function loginWithGoogle(idToken: string) {
+    const { data } = await api.post<SessionResponse>('/sessions/google', { idToken })
+    setToken(data.token)
+    setUser(data.user)
+  }
+
   async function register(input: RegisterInput) {
     await api.post('/users', input)
     // Registration does not return a token; log in to obtain one.
@@ -60,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // AuthProvider only re-renders when `user` changes, so a fresh value object
   // here is created exactly when it should be.
-  const value: AuthState = { user, login, register, updateUser, logout }
+  const value: AuthState = { user, login, loginWithGoogle, register, updateUser, logout }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

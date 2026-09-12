@@ -15,6 +15,10 @@ services:
       # Vite only reads env vars at build time; this bakes the API origin in.
       - key: VITE_API_URL
         value: https://godtasker-api.onrender.com
+      # Google Sign-In: the Web OAuth client id (public). Blank = button hidden.
+      # Its "Authorized JavaScript origins" must include this site's origin.
+      - key: VITE_GOOGLE_CLIENT_ID
+        value: 575266640627-g4ts5b6lgqu4f40bl2du84mijl1dnnmn.apps.googleusercontent.com
       - key: NODE_VERSION
         value: 22.22.2
     routes:

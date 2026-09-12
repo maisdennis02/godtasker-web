@@ -32,6 +32,9 @@ Configure the API URL in `.env` (defaults to `http://localhost:3333`):
 
 ```
 VITE_API_URL=http://localhost:3333
+# optional — Google Sign-In (Web OAuth client id; its Authorized JavaScript origins
+# must include http://localhost:5173 and the deployed origin). Unset = button hidden.
+VITE_GOOGLE_CLIENT_ID=xxxx.apps.googleusercontent.com
 ```
 
 ## Usage

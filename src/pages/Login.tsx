@@ -2,10 +2,11 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
-import { Button, Card, Field, Input } from '../components/ui'
+import { Button, Card, Field, Input, PasswordInput } from '../components/ui'
+import { GoogleSignInButton, googleSignInEnabled } from '../components/GoogleSignInButton'
 
 export function Login() {
-  const { login, register } = useAuth()
+  const { login, loginWithGoogle, register } = useAuth()
   const navigate = useNavigate()
   const [params] = useSearchParams()
   // The landing page's "Sign up" CTAs deep-link to /login?mode=register.
@@ -69,11 +70,11 @@ export function Login() {
             />
           </Field>
           <Field label="Password">
-            <Input
-              type="password"
+            <PasswordInput
               value={password}
               onChange={e => setPassword(e.target.value)}
               placeholder="••••••••"
+              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
               required
             />
           </Field>
@@ -88,6 +89,33 @@ export function Login() {
             {loading ? 'Please wait…' : mode === 'login' ? 'Log in' : 'Create account'}
           </Button>
         </form>
+
+        {googleSignInEnabled && (
+          <>
+            <div className="my-3 flex items-center gap-2 text-[11px] uppercase tracking-wide text-slate-500">
+              <span className="h-px flex-1 bg-slate-800" />
+              or
+              <span className="h-px flex-1 bg-slate-800" />
+            </div>
+            <GoogleSignInButton
+              text={mode === 'login' ? 'signin_with' : 'signup_with'}
+              onCredential={async idToken => {
+                setError(null)
+                setLoading(true)
+                try {
+                  await loginWithGoogle(idToken)
+                  navigate('/')
+                } catch (err) {
+                  const e2 = err as { response?: { data?: { error?: string } }; message?: string }
+                  setError(e2.response?.data?.error ?? e2.message ?? 'Google sign-in failed')
+                } finally {
+                  setLoading(false)
+                }
+              }}
+              onError={err => setError(err.message)}
+            />
+          </>
+        )}
         <button
           className="mt-3 text-xs text-indigo-400 hover:text-indigo-300"
           onClick={() => {
