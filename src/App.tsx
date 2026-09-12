@@ -20,6 +20,7 @@ const Profile = lazy(() => import('./pages/Profile').then(m => ({ default: m.Pro
 const ApiConsole = lazy(() =>
   import('./pages/ApiConsole').then(m => ({ default: m.ApiConsole }))
 )
+const Beta = lazy(() => import('./pages/Beta').then(m => ({ default: m.Beta })))
 const Privacy = lazy(() => import('./pages/Privacy').then(m => ({ default: m.Privacy })))
 const Terms = lazy(() => import('./pages/Terms').then(m => ({ default: m.Terms })))
 const DeleteAccount = lazy(() =>
@@ -51,6 +52,8 @@ export default function App() {
         <Route path="/terms" element={<Terms />} />
         {/* Public account-deletion page — Google Play requires this URL in the listing. */}
         <Route path="/delete-account" element={<DeleteAccount />} />
+        {/* Public closed-testing steps — the link-in-bio target while the Android beta runs. */}
+        <Route path="/beta" element={<Beta />} />
         {/* Public landing at / for visitors; logged-in users get the Dashboard. */}
         {!user && <Route path="/" element={<Landing />} />}
         <Route

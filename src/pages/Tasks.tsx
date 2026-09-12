@@ -132,7 +132,6 @@ function TaskDetails({ task }: { task: Task }) {
         label="Price"
         value={task.price != null ? `$${task.price}` : null}
       />
-      <DetailRow label="Task ID" value={`#${task.id}`} />
     </div>
   )
 }
