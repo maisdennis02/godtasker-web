@@ -45,7 +45,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // `idToken` comes from Google Identity Services (see GoogleSignInButton);
   // the server verifies it and creates/links the account.
   async function loginWithGoogle(idToken: string) {
-    const { data } = await api.post<SessionResponse>('/sessions/google', { idToken })
+    const { data } = await api.post<SessionResponse>('/sessions/google', {
+      idToken,
+      // Browser language: a brand-new account gets its welcome task in it.
+      locale: navigator.language,
+    })
     setToken(data.token)
     setUser(data.user)
   }
