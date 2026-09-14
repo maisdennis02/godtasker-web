@@ -167,8 +167,9 @@ export function Dashboard() {
     queryKey: ['dashboard', id],
     enabled: !!id,
     queryFn: async () => {
+      // tz: the server buckets "due today/tomorrow" by the browser's calendar day.
       const res = await api.get(`/dashboard/${id}`, {
-        params: { user_id: id, worker_id: id },
+        params: { tz: Intl.DateTimeFormat().resolvedOptions().timeZone },
       })
       return res.data as Record<string, unknown>
     },
