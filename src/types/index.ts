@@ -87,8 +87,12 @@ export interface ChatMessage {
   chat_id: number
   sender_email: string
   recipient_email?: string | null
-  body: string
+  // Null for a voice note (sent from the mobile app).
+  body: string | null
   read_at?: string | null
+  file_id?: number | null
+  duration_ms?: number | null
+  audio?: FileRef | null
   createdAt?: string
   created_at?: string
 }

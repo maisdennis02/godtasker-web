@@ -14,7 +14,7 @@ import type { Locale } from '../i18n/landing'
 // operate as a registered entity. This is a plain-language template, not legal
 // advice — have it reviewed if you handle EU/BR users at scale.
 const CONTACT_EMAIL = 'support@lalatask.com'
-const LAST_UPDATED = '2026-07-11'
+const LAST_UPDATED = '2026-09-28'
 
 type Section = { h: string; p: string[] }
 type Copy = {
@@ -39,7 +39,7 @@ const CONTENT: Record<Locale, Copy> = {
         p: [
           'Account: your name, email address, and password (stored only as a salted hash — we never see or store your plain password).',
           'Profile (optional): first and last name, bio, birth date, gender, occupation, Instagram/LinkedIn handles, and a profile photo.',
-          'Content you create: tasks (titles, descriptions, subtask checklists, due dates, points/price), service offerings, real-time chat messages, and any photos you upload — including profile pictures and task-confirmation photos.',
+          'Content you create: tasks (titles, descriptions, subtask checklists, due dates, points/price), service offerings, real-time chat messages and voice messages you record in chat, and any photos you upload — including profile pictures and task-confirmation photos. The app only uses your microphone while you are recording a voice message.',
         ],
       },
       {
@@ -125,7 +125,7 @@ const CONTENT: Record<Locale, Copy> = {
         p: [
           'Conta: seu nome, e-mail e senha (armazenada apenas como hash com salt — nunca vemos nem guardamos sua senha em texto).',
           'Perfil (opcional): nome e sobrenome, bio, data de nascimento, gênero, profissão, perfis do Instagram/LinkedIn e uma foto de perfil.',
-          'Conteúdo que você cria: tarefas (títulos, descrições, listas de subtarefas, prazos, pontos/preço), ofertas de serviços, mensagens de chat em tempo real e quaisquer fotos que você enviar — incluindo fotos de perfil e fotos de confirmação de tarefas.',
+          'Conteúdo que você cria: tarefas (títulos, descrições, listas de subtarefas, prazos, pontos/preço), ofertas de serviços, mensagens de chat em tempo real e mensagens de voz que você gravar no chat, e quaisquer fotos que você enviar — incluindo fotos de perfil e fotos de confirmação de tarefas. O app só usa o microfone enquanto você grava uma mensagem de voz.',
         ],
       },
       {

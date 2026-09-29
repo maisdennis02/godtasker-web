@@ -112,7 +112,15 @@ export function ChatWindow({
                     : 'bg-slate-800 text-slate-100'
                 }`}
               >
-                <span>{m.body}</span>
+                {m.audio?.url ? (
+                  <audio
+                    controls
+                    preload="none"
+                    src={m.audio.url}
+                    className="max-w-full"
+                  />
+                ) : null}
+                {m.body ? <span>{m.body}</span> : null}
                 <span
                   className={`ml-2 align-bottom text-[10px] ${
                     mine ? 'text-indigo-200' : 'text-slate-400'

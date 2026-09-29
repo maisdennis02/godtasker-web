@@ -48,7 +48,8 @@ export function Chat() {
     const set = new Set<string>()
     data?.forEach(c => {
       const other = c.user_email === me ? c.worker_email : c.user_email
-      if (other && !blockedEmails.has(other)) set.add(other)
+      // Legacy conversations with yourself are hidden too.
+      if (other && other !== me && !blockedEmails.has(other)) set.add(other)
     })
     // Keep an explicitly opened peer even if blocked, so the window still loads.
     if (selected) set.add(selected)
@@ -93,6 +94,10 @@ export function Chat() {
   function startChatWithTyped() {
     const typed = newEmail.trim()
     if (!typed) return
+    if (typed.toLowerCase() === me.toLowerCase()) {
+      setAddError("You can't start a conversation with yourself")
+      return
+    }
     // If the user list is loaded, only accept a known account (with its
     // canonical casing). The server rejects unknown emails too — this just
     // catches the typo before a window opens.
