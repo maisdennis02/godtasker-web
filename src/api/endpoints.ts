@@ -404,16 +404,6 @@ export const ENDPOINTS: EndpointSpec[] = [
   },
   {
     group: 'Users',
-    label: 'Update points',
-    method: 'PUT',
-    path: '/users/points/:id',
-    fields: [
-      { name: 'id', in: 'path', type: 'number', default: '{id}' },
-      { name: 'points', in: 'body', type: 'number' },
-    ],
-  },
-  {
-    group: 'Users',
     label: 'Delete user',
     method: 'DELETE',
     path: '/users/:id',
